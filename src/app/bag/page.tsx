@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/layout/ComingSoon";
+import { BagClient } from "./BagClient";
 
 export const metadata: Metadata = {
-  title: "Shopping Bag",
+  title: "Your bag",
 };
 
 export default function BagPage() {
-  return <ComingSoon title="Shopping Bag" eyebrow="Your Order" />;
+  return <BagClient />;
 }

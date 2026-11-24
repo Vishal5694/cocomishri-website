@@ -68,7 +68,9 @@ export default function HomePage() {
     <div className="flex flex-col w-full overflow-x-hidden">
       {/* 2.1 Hero (full width, no container, exactly ONE h1) */}
       <Section noContainer bg="transparent" className="relative w-full">
-        <HeroImage />
+        <div data-transparent-header>
+          <HeroImage />
+        </div>
 
         {/* Single Text Card: aligned with Container x-start on desktop, overlapping by 32px on mobile */}
         <div className="-mt-8 mx-4 lg:mt-0 lg:mx-0 lg:absolute lg:bottom-12 lg:left-[max(2rem,calc((100vw-72rem)/2+2rem))] z-10 bg-cream-50 rounded-card p-4 sm:p-8 lg:p-10 max-w-[520px] lg:max-w-[580px] shadow-lg relative">

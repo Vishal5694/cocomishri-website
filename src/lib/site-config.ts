@@ -43,6 +43,14 @@ export interface SiteConfig {
   };
   ageGroups: readonly string[];
   announcements: readonly string[];
+  topBarMessages: readonly string[];
+  countries: {
+    current: string;
+    global: {
+      enabled: boolean;
+      note: string;
+    };
+  };
 }
 
 const inrFormatter = new Intl.NumberFormat("en-IN", {
@@ -97,4 +105,18 @@ export const siteConfig: SiteConfig = {
     `Easy ${returnsConfig.windowDays}-day returns and exchanges`,
     `Cash on delivery available on orders up to ${formatINR(shippingConfig.codMaxOrderValue)}`,
   ] as const,
+  topBarMessages: [
+    "Cocomishri will never ask for OTPs or payments over calls.",
+    "Free shipping on all prepaid orders",
+    `Easy ${returnsConfig.windowDays}-day returns and exchanges`,
+    `Cash on delivery available on orders up to ${formatINR(shippingConfig.codMaxOrderValue)}`,
+    "An unboxing video is needed for all returns and exchanges.",
+  ] as const,
+  countries: {
+    current: "India",
+    global: {
+      enabled: false,
+      note: "International shipping is coming soon. Write to us at care@cocomishri.com.",
+    },
+  } as const,
 };

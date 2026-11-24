@@ -276,6 +276,7 @@ function extractCollectionSlugs(): string[] {
   slugs.add("age-8-12y");
   slugs.add("gifts-naming-ceremony");
   slugs.add("gifts-baby-shower");
+  slugs.add("baby-best-sellers");
   return Array.from(slugs);
 }
 
@@ -291,6 +292,7 @@ const slugTitleMap: Record<string, { title: string; eyebrow: string }> = {
   "age-6-8y": { title: "6–8 years", eyebrow: "Shop by age" },
   "age-8-12y": { title: "8–12 years", eyebrow: "Shop by age" },
   "baby-new-in": { title: "New in", eyebrow: "Baby + Toddler" },
+  "baby-best-sellers": { title: "Best sellers – Baby + Toddler", eyebrow: "Baby + Toddler" },
   "baby-girl-best-sellers": { title: "Best sellers – Baby girl", eyebrow: "Baby + Toddler" },
   "baby-boy-best-sellers": { title: "Best sellers – Baby boy", eyebrow: "Baby + Toddler" },
   "naming-ceremony": { title: "Naming ceremony", eyebrow: "Occasions" },
@@ -362,3 +364,202 @@ export function collectionTitle(slug: string): { title: string; eyebrow: string 
     .replace(/\b\w/g, (char) => char.toUpperCase());
   return { title: formatted, eyebrow: "Collection" };
 }
+
+export type DepartmentId = "baby-toddler" | "girls" | "boys" | "gifting";
+
+export const departments: { id: DepartmentId; label: string }[] = [
+  { id: "baby-toddler", label: "Baby + Toddler" },
+  { id: "girls", label: "Girls" },
+  { id: "boys", label: "Boys" },
+  { id: "gifting", label: "Gifting" },
+];
+
+export interface DrawerDepartmentContent {
+  highlight: NavLink;
+  accordions: NavGroup[];
+  quickLinks: NavLink[];
+}
+
+const namingHighlight: NavLink = {
+  label: "Naming Ceremony Edit",
+  href: "/collections/naming-ceremony",
+};
+
+export const drawerNav: Record<DepartmentId, DrawerDepartmentContent> = {
+  "baby-toddler": {
+    highlight: namingHighlight,
+    accordions: [
+      {
+        title: "Baby girls",
+        links: [
+          col("All", "baby-girls"),
+          col("Tops", "baby-girls-tops"),
+          col("Bottoms", "baby-girls-bottoms"),
+          col("One-pieces", "baby-girls-one-pieces"),
+          col("Sets", "baby-girls-sets"),
+          col("Dresses", "baby-girls-dresses"),
+          col("Outerwear", "baby-girls-outerwear"),
+          col("Nightwear", "baby-girls-nightwear"),
+          col("Accessories", "baby-girls-accessories"),
+        ],
+      },
+      {
+        title: "Baby boys",
+        links: [
+          col("All", "baby-boys"),
+          col("Tops", "baby-boys-tops"),
+          col("Bottoms", "baby-boys-bottoms"),
+          col("One-pieces", "baby-boys-one-pieces"),
+          col("Sets", "baby-boys-sets"),
+          col("Outerwear", "baby-boys-outerwear"),
+          col("Nightwear", "baby-boys-nightwear"),
+          col("Accessories", "baby-boys-accessories"),
+        ],
+      },
+      {
+        title: "Shop by age",
+        links: [
+          col("0–6 months", "age-0-6m"),
+          col("6–12 months", "age-6-12m"),
+          col("1–2 years", "age-1-2y"),
+        ],
+      },
+    ],
+    quickLinks: [
+      col("Shop all", "baby-toddler"),
+      col("New in", "baby-new-in"),
+      col("Best sellers", "baby-best-sellers"),
+      col("Sibling matching", "sibling-matching"),
+    ],
+  },
+  girls: {
+    highlight: namingHighlight,
+    accordions: [
+      {
+        title: "Clothing",
+        links: [
+          col("All", "girls"),
+          col("Tops", "girls-tops"),
+          col("Bottoms", "girls-bottoms"),
+          col("Dresses", "girls-dresses"),
+          col("Sets", "girls-sets"),
+          col("Ethnic wear", "girls-ethnic-wear"),
+          col("Outerwear", "girls-outerwear"),
+          col("Nightwear", "girls-nightwear"),
+          col("Accessories", "girls-accessories"),
+        ],
+      },
+      {
+        title: "Shop by age",
+        links: [
+          col("2–4 years", "girls-2-4y"),
+          col("4–6 years", "girls-4-6y"),
+          col("6–8 years", "girls-6-8y"),
+          col("8–12 years", "girls-8-12y"),
+        ],
+      },
+    ],
+    quickLinks: [
+      col("Shop all", "girls"),
+      col("New in", "girls-new-in"),
+      col("Best sellers", "girls-best-sellers"),
+      col("Sibling matching", "sibling-matching"),
+    ],
+  },
+  boys: {
+    highlight: namingHighlight,
+    accordions: [
+      {
+        title: "Clothing",
+        links: [
+          col("All", "boys"),
+          col("Tops", "boys-tops"),
+          col("Bottoms", "boys-bottoms"),
+          col("Sets", "boys-sets"),
+          col("Ethnic wear", "boys-ethnic-wear"),
+          col("Outerwear", "boys-outerwear"),
+          col("Nightwear", "boys-nightwear"),
+          col("Accessories", "boys-accessories"),
+        ],
+      },
+      {
+        title: "Shop by age",
+        links: [
+          col("2–4 years", "boys-2-4y"),
+          col("4–6 years", "boys-4-6y"),
+          col("6–8 years", "boys-6-8y"),
+          col("8–12 years", "boys-8-12y"),
+        ],
+      },
+    ],
+    quickLinks: [
+      col("Shop all", "boys"),
+      col("New in", "boys-new-in"),
+      col("Best sellers", "boys-best-sellers"),
+      col("Sibling matching", "sibling-matching"),
+    ],
+  },
+  gifting: {
+    highlight: namingHighlight,
+    accordions: [
+      {
+        title: "Gift guide",
+        links: [
+          col("Naming ceremony gifts", "gifts-naming-ceremony"),
+          col("Baby shower gifts", "gifts-baby-shower"),
+          col("Gifts for girls", "gifts-girls"),
+          col("Gifts for boys", "gifts-boys"),
+        ],
+      },
+    ],
+    quickLinks: [
+      { label: "Gift shop", href: "/gifting" },
+      { label: "Gifting help", href: "/contact" },
+    ],
+  },
+};
+
+export interface DrawerSubMenu {
+  id: "occasions" | "our-story" | "recently-viewed";
+  label: string;
+  links?: NavLink[];
+}
+
+export const drawerMore: DrawerSubMenu[] = [
+  {
+    id: "occasions",
+    label: "Occasions",
+    links: [
+      col("Naming ceremony", "naming-ceremony"),
+      col("First birthday", "first-birthday"),
+      col("Festive", "festive"),
+      col("Family functions", "family-functions"),
+      col("Everyday comfort", "everyday-comfort"),
+      col("Nightwear", "nightwear"),
+    ],
+  },
+  {
+    id: "our-story",
+    label: "Our Story",
+    links: [
+      { label: "Our story", href: "/our-story" },
+      { label: "Made under our own watch", href: "/our-story#made-under-our-watch" },
+      { label: "Fabric & care", href: "/fabric-care" },
+    ],
+  },
+  {
+    id: "recently-viewed",
+    label: "Recently viewed",
+  },
+];
+
+export const drawerFooterLinks: {
+  label: string;
+  href?: string;
+  action?: "account";
+}[] = [
+  { label: "Sign in", action: "account" },
+  { label: "Wishlist", href: "/wishlist" },
+  { label: "Track order", href: "/track-order" },
+  { label: "Contact", href: "/contact" },
+];

@@ -3,6 +3,7 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
 import { asset } from "@/lib/asset";
 import { PanelProvider } from "@/lib/ui/PanelContext";
+import { DepartmentProvider } from "@/lib/department/DepartmentContext";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import "./globals.css";
 
@@ -42,7 +43,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-cream-50 text-cocoa-900">
         <PanelProvider>
-          <SiteChrome>{children}</SiteChrome>
+          <DepartmentProvider>
+            <SiteChrome>{children}</SiteChrome>
+          </DepartmentProvider>
         </PanelProvider>
       </body>
     </html>

@@ -164,9 +164,10 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
 
   return (
     <section
+      data-transparent-header
       aria-label="Featured campaigns"
       aria-roledescription="carousel"
-      className="relative w-full h-[calc(100svh-2rem)] min-h-[540px] mt-8 overflow-hidden bg-caramel-100 select-none"
+      className="relative w-full h-[calc(100svh-2rem)] min-h-[540px] overflow-hidden bg-caramel-100 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}

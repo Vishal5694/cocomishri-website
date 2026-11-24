@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Header } from "./Header";
-import { AnnouncementBar } from "./AnnouncementBar";
-import { Footer } from "./Footer";
+import { TopBar } from "@/components/header/TopBar";
+import { SiteHeader } from "@/components/header/SiteHeader";
+import { FooterV2 } from "@/components/v2/FooterV2";
 import { WhatsAppButton } from "./WhatsAppButton";
+import { cn } from "@/lib/utils";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "";
@@ -14,22 +15,22 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     basePath && pathname.startsWith(basePath)
       ? pathname.slice(basePath.length) || "/"
       : pathname;
-  const isV2 = normalized === "/v2" || normalized.startsWith("/v2/");
-
-  if (isV2) {
-    return <>{children}</>;
-  }
+  const isTransparentHeroRoute = normalized === "/" || normalized === "/v2";
 
   return (
     <>
-      <div className="sticky top-0 z-40 w-full">
-        <Header />
-        <AnnouncementBar />
-      </div>
-      <main id="main" className="flex-1">
+      <TopBar />
+      <SiteHeader />
+      <main
+        id="main"
+        className={cn(
+          "flex-1",
+          !isTransparentHeroRoute && "pt-16 lg:pt-[72px]"
+        )}
+      >
         {children}
       </main>
-      <Footer />
+      <FooterV2 />
       <WhatsAppButton />
     </>
   );
