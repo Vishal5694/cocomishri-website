@@ -1,13 +1,23 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import { asset } from "@/lib/asset";
 
-const STORAGE_KEY = "cm_v2_popup_seen";
+const STORAGE_KEY = "cm_popup_seen";
 
-export function NewsletterPopupV2() {
+export function NewsletterPopup() {
+  const pathname = usePathname() || "";
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const normalizedPath =
+    basePath && pathname.startsWith(basePath)
+      ? pathname.slice(basePath.length) || "/"
+      : pathname;
+  const isStyleguide =
+    normalizedPath === "/styleguide" || normalizedPath.startsWith("/styleguide/");
+
   const [isOpen, setIsOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [emailError, setEmailError] = React.useState("");
@@ -30,6 +40,8 @@ export function NewsletterPopupV2() {
   }, [markSeen]);
 
   React.useEffect(() => {
+    if (isStyleguide) return;
+
     let alreadySeen = false;
     try {
       alreadySeen = window.localStorage.getItem(STORAGE_KEY) === "1";
@@ -51,7 +63,7 @@ export function NewsletterPopupV2() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [markSeen]);
+  }, [isStyleguide, markSeen]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -103,7 +115,7 @@ export function NewsletterPopupV2() {
     setEmail("");
   };
 
-  if (!isOpen) return null;
+  if (isStyleguide || !isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -119,7 +131,7 @@ export function NewsletterPopupV2() {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="v2-popup-heading"
+        aria-labelledby="popup-heading"
         className="relative z-10 w-full max-w-md rounded-card p-3 shadow-2xl"
         style={{
           backgroundImage:
@@ -149,7 +161,7 @@ export function NewsletterPopupV2() {
             <span className="eyebrow">Join our little world</span>
 
             <h2
-              id="v2-popup-heading"
+              id="popup-heading"
               className="font-heading text-[26px] leading-[1.25] font-medium text-cocoa-900"
             >
               Be the first to know about new pieces.

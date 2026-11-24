@@ -2,14 +2,12 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { CampaignTitle } from "./CampaignTitle";
-import { TextLink } from "./TextLink";
+import { CampaignTitle, TextLink } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export interface HeroSlideData {
   id: string;
   title: string;
-  isPrimaryHeading?: boolean;
   links: { label: string; href: string }[];
   desktopSrcSet?: string;
   mobileSrcSet?: string;
@@ -18,10 +16,9 @@ export interface HeroSlideData {
   desktopPosition?: string;
   mobilePosition?: string;
   shot?: string;
-  isSample?: boolean;
 }
 
-export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
+export function HeroSlider({ slides }: { slides: HeroSlideData[] }) {
   const [imageIndex, setImageIndex] = React.useState(0);
   const [textIndex, setTextIndex] = React.useState(0);
   const [textVisible, setTextVisible] = React.useState(true);
@@ -49,7 +46,6 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  // Load slides 2 and 3 right after the page is idle
   React.useEffect(() => {
     if (typeof window.requestIdleCallback === "function") {
       const id = window.requestIdleCallback(() => setIdleReady(true), {
@@ -61,7 +57,6 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     return () => clearTimeout(id);
   }, []);
 
-  // Sync any already-cached images
   React.useEffect(() => {
     slides.forEach((_, idx) => {
       const el = imgRefs.current[idx];
@@ -85,8 +80,6 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
         return;
       }
 
-      // Crossfade images (600ms) while current text fades OUT completely (200ms),
-      // then next text fades IN (300ms).
       setImageIndex(targetIdx);
       setTextVisible(false);
       fadeTimerRef.current = window.setTimeout(() => {
@@ -125,7 +118,6 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     [slides.length, imageIndex, pendingIndex, idleReady, loadedMap, startTransition]
   );
 
-  // Trigger pending transition as soon as the target image finishes loading
   React.useEffect(() => {
     if (pendingIndex !== null && loadedMap[pendingIndex]) {
       const target = pendingIndex;
@@ -134,7 +126,6 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     }
   }, [pendingIndex, loadedMap, startTransition]);
 
-  // Autoplay every 6s (disabled with reduced motion)
   React.useEffect(() => {
     if (reducedMotion || isPaused || slides.length <= 1) return;
     const timer = window.setInterval(() => {
@@ -166,7 +157,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     <section
       aria-label="Featured campaigns"
       aria-roledescription="carousel"
-      className="relative w-full h-[calc(100svh-2rem)] min-h-[540px] mt-8 overflow-hidden bg-caramel-100 select-none"
+      className="relative w-full h-[calc(100svh-2rem)] min-h-[540px] overflow-hidden bg-caramel-100 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -177,6 +168,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
       <h1 className="sr-only">
         Cocomishri — soft, comfortable kidswear for little moments
       </h1>
+
       {/* Background Images (crossfade 600ms, instant with reduced motion) */}
       {slides.map((slide, idx) => {
         const isCurrentImg = idx === imageIndex;

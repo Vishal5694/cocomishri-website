@@ -7,3 +7,5 @@ export * from "./icons";
 export * from "./BrandImage";
 export * from "./Carousel";
 export * from "./Section";
+export * from "./CampaignTitle";
+export * from "./TextLink";

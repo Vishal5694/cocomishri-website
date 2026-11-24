@@ -96,5 +96,6 @@ export const siteConfig: SiteConfig = {
     "Free shipping on all prepaid orders",
     `Easy ${returnsConfig.windowDays}-day returns and exchanges`,
     `Cash on delivery available on orders up to ${formatINR(shippingConfig.codMaxOrderValue)}`,
+    "Cocomishri will never ask for OTPs or payments over calls.",
   ] as const,
 };

@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, CampaignTitle } from "@/components/ui";
 import { asset } from "@/lib/asset";
-import { CampaignTitle } from "./CampaignTitle";
 
-export function NewsletterBandV2() {
+export function NewsletterBand() {
   const [email, setEmail] = React.useState("");
   const [emailError, setEmailError] = React.useState("");
   const [isSubscribed, setIsSubscribed] = React.useState(false);
