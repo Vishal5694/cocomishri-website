@@ -174,6 +174,9 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
+      <h1 className="sr-only">
+        Cocomishri — soft, comfortable kidswear for little moments
+      </h1>
       {/* Background Images (crossfade 600ms, instant with reduced motion) */}
       {slides.map((slide, idx) => {
         const isCurrentImg = idx === imageIndex;
@@ -258,10 +261,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
         )}
       >
         <div className="max-w-3xl space-y-4">
-          <CampaignTitle
-            as={activeTextSlide.isPrimaryHeading ? "h1" : "h2"}
-            className="text-cream-50"
-          >
+          <CampaignTitle as="h2" className="text-cream-50">
             {activeTextSlide.title}
           </CampaignTitle>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
