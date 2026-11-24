@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import * as React from "react";
-import Link from "next/link";
 import { getImageProps } from "next/image";
 import {
   BrandImage,
-  Carousel,
   CampaignTitle,
   TextLink,
   Sparkle,
 } from "@/components/ui";
-import { Container } from "@/components/layout/Container";
-import { ProductCard } from "@/components/product/ProductCard";
+import {
+  NewsletterBand,
+  TrustStrip,
+  NewsletterPopup,
+} from "@/components/layout";
 import { HeroSlider, type HeroSlideData } from "@/components/home/HeroSlider";
 import { images, type ImageEntry, type ImageKey } from "@/lib/images";
-import { mockProducts } from "@/lib/mock/products";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -136,16 +136,6 @@ const occasionTiles: {
   },
 ];
 
-const ageSlugMap: Record<string, string> = {
-  "0–6M": "age-0-6m",
-  "6–12M": "age-6-12m",
-  "1–2Y": "age-1-2y",
-  "2–4Y": "age-2-4y",
-  "4–6Y": "age-4-6y",
-  "6–8Y": "age-6-8y",
-  "8–12Y": "age-8-12y",
-};
-
 const instagramKeys: ImageKey[] = [
   "instagram-1",
   "instagram-2",
@@ -242,41 +232,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3) NEW IN — bg cream-50 */}
-      <section className="w-full bg-cream-50 py-14 lg:py-20">
-        <Container>
-          <Carousel
-            itemCount={mockProducts.length}
-            trackLabel="New in products"
-            prevLabel="Previous products"
-            nextLabel="Next products"
-            headerSlot={
-              <div className="space-y-2">
-                <span className="eyebrow block">New in</span>
-                <CampaignTitle as="h2" className="text-cocoa-900">
-                  Made for little moments
-                </CampaignTitle>
-                <div>
-                  <TextLink href="/shop" variant="dark" className="px-0">
-                    SHOP ALL
-                  </TextLink>
-                </div>
-              </div>
-            }
-          >
-            {mockProducts.map((product) => (
-              <div
-                key={product.id}
-                className="w-[72vw] sm:w-[260px] lg:w-[260px] shrink-0 snap-start"
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </Carousel>
-        </Container>
-      </section>
-
-      {/* 4) EDITORIAL PAIR — Soft like a hug */}
+      {/* 3) EDITORIAL PAIR */}
       <section className="w-full bg-sand-100 py-14 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-10">
           <CampaignTitle as="h2" className="text-cocoa-900 text-center">
@@ -311,7 +267,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5) COCOA BLOCK — Naming ceremony */}
+      {/* 4) COLOUR BLOCK — bg cocoa-900 */}
       <section className="relative w-full bg-cocoa-900 text-cream-50 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <Sparkle
           aria-hidden="true"
@@ -353,7 +309,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6) SAGE BLOCK — Shop by occasion */}
+      {/* 5) COLOUR BLOCK — bg sage-700 */}
       <section className="w-full bg-sage-700 text-cream-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-10">
           <CampaignTitle as="h2" className="text-cream-50 text-center">
@@ -381,31 +337,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7) CARAMEL BLOCK — Shop by age (no eyebrow) */}
-      <section className="w-full bg-caramel-700 text-cream-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-8 text-center">
-          <CampaignTitle as="h2" className="text-cream-50">
-            Shop by age
-          </CampaignTitle>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            {siteConfig.ageGroups.map((age) => {
-              const slug = ageSlugMap[age] || "shop";
-              return (
-                <Link
-                  key={age}
-                  href={`/collections/${slug}`}
-                  className="h-12 min-h-[48px] px-6 rounded-pill border-[1.5px] border-cream-50 text-cream-50 hover:bg-cream-50 hover:text-cocoa-900 inline-flex items-center justify-center text-sm sm:text-base font-semibold transition-colors duration-300 ease-soft focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2 select-none"
-                >
-                  {age}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 8) GIFTING */}
+      {/* 6) GIFTING */}
       <section className="w-full bg-cream-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-10">
           <CampaignTitle as="h2" className="text-cocoa-900 text-center">
@@ -447,7 +379,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9) STORY BLOCK */}
+      {/* 7) STORY BLOCK */}
       <section className="relative w-full py-16 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-cocoa-900">
         <div className="absolute inset-0">
           <BrandImage
@@ -496,7 +428,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 10) INSTAGRAM STRIP */}
+      {/* 8) INSTAGRAM */}
       <section className="w-full bg-cream-50 pt-16 lg:pt-20">
         <div className="text-center space-y-2 px-4 mb-10">
           <CampaignTitle as="h2" className="text-cocoa-900">
@@ -531,6 +463,15 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* 9) NEWSLETTER BAND */}
+      <NewsletterBand />
+
+      {/* 10) TRUST STRIP */}
+      <TrustStrip />
+
+      {/* Newsletter Popup (home page only, 50% scroll, once per browser) */}
+      <NewsletterPopup />
     </div>
   );
 }

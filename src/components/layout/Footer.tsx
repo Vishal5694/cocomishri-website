@@ -6,8 +6,6 @@ import { footerColumns, footerLegal } from "@/lib/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { CurrentYear } from "./CurrentYear";
 
-const paymentMethods = ["UPI", "Cards", "Netbanking", "Cash on delivery"];
-
 export function Footer() {
   const showLegalEntity =
     siteConfig.legal.entityName &&
@@ -91,18 +89,6 @@ export function Footer() {
               loading="lazy"
             />
           </div>
-        </div>
-
-        {/* Payment pills above legal row */}
-        <div className="pt-6 pb-4 flex flex-wrap items-center justify-center sm:justify-start gap-2 border-b border-sand-300">
-          {paymentMethods.map((method) => (
-            <span
-              key={method}
-              className="border border-sand-300 text-cocoa-700 rounded-pill px-3 py-1 text-xs font-medium"
-            >
-              {method}
-            </span>
-          ))}
         </div>
 
         {/* Bottom row: Copyright + Legal links */}

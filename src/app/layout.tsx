@@ -6,11 +6,8 @@ import { PanelProvider } from "@/lib/ui/PanelContext";
 import {
   TopBar,
   Header,
-  NewsletterBand,
-  TrustStrip,
   Footer,
   WhatsAppButton,
-  NewsletterPopup,
 } from "@/components/layout";
 import "./globals.css";
 
@@ -55,11 +52,8 @@ export default function RootLayout({
           <main id="main" className="flex-1">
             {children}
           </main>
-          <NewsletterBand />
-          <TrustStrip />
           <Footer />
           <WhatsAppButton />
-          <NewsletterPopup />
         </PanelProvider>
       </body>
     </html>

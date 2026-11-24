@@ -93,9 +93,6 @@ export const siteConfig: SiteConfig = {
   returns: returnsConfig,
   ageGroups: ["0–6M", "6–12M", "1–2Y", "2–4Y", "4–6Y", "6–8Y", "8–12Y"] as const,
   announcements: [
-    "Free shipping on all prepaid orders",
-    `Easy ${returnsConfig.windowDays}-day returns and exchanges`,
-    `Cash on delivery available on orders up to ${formatINR(shippingConfig.codMaxOrderValue)}`,
     "Cocomishri will never ask for OTPs or payments over calls.",
   ] as const,
 };
