@@ -22,9 +22,23 @@ export interface HeroSlideData {
 }
 
 export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
-  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [imageIndex, setImageIndex] = React.useState(0);
+  const [textIndex, setTextIndex] = React.useState(0);
+  const [textVisible, setTextVisible] = React.useState(true);
+  const [idleReady, setIdleReady] = React.useState(false);
   const [isPaused, setIsPaused] = React.useState(false);
   const [reducedMotion, setReducedMotion] = React.useState(false);
+  const [loadedMap, setLoadedMap] = React.useState<Record<number, boolean>>(() => {
+    const init: Record<number, boolean> = {};
+    slides.forEach((s, i) => {
+      if (!s.fallbackSrc) init[i] = true;
+    });
+    return init;
+  });
+  const [pendingIndex, setPendingIndex] = React.useState<number | null>(null);
+
+  const imgRefs = React.useRef<Record<number, HTMLImageElement | null>>({});
+  const fadeTimerRef = React.useRef<number | null>(null);
   const touchStartX = React.useRef<number | null>(null);
 
   React.useEffect(() => {
@@ -35,17 +49,102 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Load slides 2 and 3 right after the page is idle
+  React.useEffect(() => {
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(() => setIdleReady(true), {
+        timeout: 1000,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(() => setIdleReady(true), 200);
+    return () => clearTimeout(id);
+  }, []);
+
+  // Sync any already-cached images
+  React.useEffect(() => {
+    slides.forEach((_, idx) => {
+      const el = imgRefs.current[idx];
+      if (el && el.complete && el.naturalWidth > 0) {
+        setLoadedMap((prev) => (prev[idx] ? prev : { ...prev, [idx]: true }));
+      }
+    });
+  }, [idleReady, slides]);
+
+  const startTransition = React.useCallback(
+    (targetIdx: number) => {
+      if (fadeTimerRef.current !== null) {
+        window.clearTimeout(fadeTimerRef.current);
+        fadeTimerRef.current = null;
+      }
+
+      if (reducedMotion) {
+        setImageIndex(targetIdx);
+        setTextIndex(targetIdx);
+        setTextVisible(true);
+        return;
+      }
+
+      // Crossfade images (600ms) while current text fades OUT completely (200ms),
+      // then next text fades IN (300ms).
+      setImageIndex(targetIdx);
+      setTextVisible(false);
+      fadeTimerRef.current = window.setTimeout(() => {
+        setTextIndex(targetIdx);
+        setTextVisible(true);
+        fadeTimerRef.current = null;
+      }, 200);
+    },
+    [reducedMotion]
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (fadeTimerRef.current !== null) {
+        window.clearTimeout(fadeTimerRef.current);
+      }
+    };
+  }, []);
+
+  const goTo = React.useCallback(
+    (index: number) => {
+      const normalized = (index + slides.length) % slides.length;
+      if (normalized === imageIndex && pendingIndex === null) return;
+
+      if (!idleReady) {
+        setIdleReady(true);
+      }
+
+      if (loadedMap[normalized]) {
+        setPendingIndex(null);
+        startTransition(normalized);
+      } else {
+        setPendingIndex(normalized);
+      }
+    },
+    [slides.length, imageIndex, pendingIndex, idleReady, loadedMap, startTransition]
+  );
+
+  // Trigger pending transition as soon as the target image finishes loading
+  React.useEffect(() => {
+    if (pendingIndex !== null && loadedMap[pendingIndex]) {
+      const target = pendingIndex;
+      setPendingIndex(null);
+      startTransition(target);
+    }
+  }, [pendingIndex, loadedMap, startTransition]);
+
+  // Autoplay every 6s (disabled with reduced motion)
   React.useEffect(() => {
     if (reducedMotion || isPaused || slides.length <= 1) return;
     const timer = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % slides.length);
+      const next = (imageIndex + 1) % slides.length;
+      if (loadedMap[next]) {
+        startTransition(next);
+      }
     }, 6000);
     return () => window.clearInterval(timer);
-  }, [reducedMotion, isPaused, slides.length]);
-
-  const goTo = (index: number) => {
-    setActiveIndex((index + slides.length) % slides.length);
-  };
+  }, [reducedMotion, isPaused, slides.length, imageIndex, loadedMap, startTransition]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -56,10 +155,12 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
     const diff = e.changedTouches[0].clientX - touchStartX.current;
     touchStartX.current = null;
     if (Math.abs(diff) > 40) {
-      if (diff < 0) goTo(activeIndex + 1);
-      else goTo(activeIndex - 1);
+      if (diff < 0) goTo(imageIndex + 1);
+      else goTo(imageIndex - 1);
     }
   };
+
+  const activeTextSlide = slides[textIndex] || slides[0];
 
   return (
     <section
@@ -73,20 +174,21 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Background Images (crossfade 600ms, instant with reduced motion) */}
       {slides.map((slide, idx) => {
-        const isActive = idx === activeIndex;
+        const isCurrentImg = idx === imageIndex;
+        const shouldRenderImg = idx === 0 || idleReady;
+
         return (
           <div
             key={slide.id}
-            aria-hidden={!isActive}
+            aria-hidden={!isCurrentImg}
             className={cn(
-              "absolute inset-0 w-full h-full transition-opacity duration-500 ease-soft motion-reduce:transition-none",
-              isActive
-                ? "opacity-100 z-10 pointer-events-auto"
-                : "opacity-0 z-0 pointer-events-none"
+              "absolute inset-0 w-full h-full transition-opacity duration-[600ms] ease-soft motion-reduce:transition-none",
+              isCurrentImg ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none"
             )}
           >
-            {slide.fallbackSrc ? (
+            {slide.fallbackSrc && shouldRenderImg ? (
               <picture className="w-full h-full block">
                 {slide.desktopSrcSet && (
                   <source
@@ -101,12 +203,25 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
                   />
                 )}
                 <img
+                  ref={(el) => {
+                    imgRefs.current[idx] = el;
+                  }}
                   src={slide.fallbackSrc}
                   alt={slide.alt}
                   sizes="100vw"
-                  loading={idx === 0 ? "eager" : "lazy"}
-                  fetchPriority={idx === 0 ? "high" : undefined}
+                  loading="eager"
+                  fetchPriority={idx === 0 ? "high" : "low"}
                   decoding="async"
+                  onLoad={() =>
+                    setLoadedMap((prev) =>
+                      prev[idx] ? prev : { ...prev, [idx]: true }
+                    )
+                  }
+                  onError={() =>
+                    setLoadedMap((prev) =>
+                      prev[idx] ? prev : { ...prev, [idx]: true }
+                    )
+                  }
                   className="w-full h-full object-cover"
                   style={{
                     objectPosition: slide.desktopPosition || "center",
@@ -122,44 +237,47 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
                 {slide.shot && <span>Photo: {slide.shot}</span>}
               </div>
             )}
-
-            {/* Contrast Scrim (cocoa-900 0 -> 55% at bottom) */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-cocoa-900/55 via-cocoa-900/20 to-transparent pointer-events-none"
-            />
-
-            {/* Centred Title + Links near the bottom */}
-            <div className="absolute inset-x-0 bottom-14 sm:bottom-16 z-10 px-4 sm:px-6 text-center flex flex-col items-center">
-              <div className="max-w-3xl space-y-4">
-                <CampaignTitle
-                  as={slide.isPrimaryHeading ? "h1" : "h2"}
-                  className="text-cream-50"
-                >
-                  {slide.title}
-                </CampaignTitle>
-                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                  {slide.links.map((link) => (
-                    <TextLink
-                      key={link.href}
-                      href={link.href}
-                      variant="cream"
-                      className={isActive ? undefined : "pointer-events-none"}
-                    >
-                      {link.label}
-                    </TextLink>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         );
       })}
 
+      {/* Contrast Scrim (cocoa-900 0 -> 55% at bottom) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-[2] bg-gradient-to-t from-cocoa-900/55 via-cocoa-900/20 to-transparent pointer-events-none"
+      />
+
+      {/* Single Non-Overlapping Text Overlay (200ms fade out, 300ms fade in) */}
+      <div
+        className={cn(
+          "absolute inset-x-0 bottom-14 sm:bottom-16 z-10 px-4 sm:px-6 text-center flex flex-col items-center",
+          "transition-opacity ease-soft motion-reduce:transition-none",
+          textVisible
+            ? "opacity-100 duration-300"
+            : "opacity-0 duration-200 pointer-events-none"
+        )}
+      >
+        <div className="max-w-3xl space-y-4">
+          <CampaignTitle
+            as={activeTextSlide.isPrimaryHeading ? "h1" : "h2"}
+            className="text-cream-50"
+          >
+            {activeTextSlide.title}
+          </CampaignTitle>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            {activeTextSlide.links.map((link) => (
+              <TextLink key={link.href} href={link.href} variant="cream">
+                {link.label}
+              </TextLink>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Prev / Next Arrows (44x44) */}
       <button
         type="button"
-        onClick={() => goTo(activeIndex - 1)}
+        onClick={() => goTo(imageIndex - 1)}
         aria-label="Previous slide"
         className="hidden sm:flex absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-20 size-11 items-center justify-center rounded-pill bg-cocoa-900/35 text-cream-50 hover:bg-cocoa-900/55 transition-colors focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
       >
@@ -168,7 +286,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
 
       <button
         type="button"
-        onClick={() => goTo(activeIndex + 1)}
+        onClick={() => goTo(imageIndex + 1)}
         aria-label="Next slide"
         className="hidden sm:flex absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-20 size-11 items-center justify-center rounded-pill bg-cocoa-900/35 text-cream-50 hover:bg-cocoa-900/55 transition-colors focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
       >
@@ -178,7 +296,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
       {/* Dots (24x24 tap areas) */}
       <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-1">
         {slides.map((slide, idx) => {
-          const active = idx === activeIndex;
+          const active = idx === imageIndex;
           return (
             <button
               key={slide.id}

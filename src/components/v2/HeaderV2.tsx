@@ -48,7 +48,7 @@ export function HeaderV2() {
   }, []);
 
   const iconBtnClass = cn(
-    "size-11 relative flex items-center justify-center rounded-pill transition-colors duration-300 ease-soft motion-reduce:transition-none",
+    "size-11 relative flex items-center justify-center rounded-pill transition-colors duration-300 ease-soft motion-reduce:transition-none shrink-0",
     isScrolledPast80
       ? "text-cocoa-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
       : "text-cream-50 hover:bg-cream-50/15 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
@@ -70,12 +70,12 @@ export function HeaderV2() {
           isHidden ? "-translate-y-full pointer-events-none" : "translate-y-0",
           isScrolledPast80
             ? "bg-cream-50 text-cocoa-900 border-b border-sand-300"
-            : "bg-gradient-to-b from-cocoa-900/55 to-transparent text-cream-50 border-b border-transparent"
+            : "bg-gradient-to-b from-cocoa-900/55 to-transparent text-cream-50"
         )}
       >
-        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 grid grid-cols-3 items-center">
-          {/* Left: Hamburger */}
-          <div className="flex items-center justify-self-start">
+        <div className="max-w-7xl mx-auto h-full px-3 sm:px-6 lg:px-8 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          {/* Left: Menu + Search */}
+          <div className="flex items-center justify-self-start gap-0.5 sm:gap-1">
             <button
               ref={menuButtonRef}
               type="button"
@@ -85,9 +85,19 @@ export function HeaderV2() {
             >
               <Menu size={22} strokeWidth={1.5} />
             </button>
+
+            <button
+              ref={searchButtonRef}
+              type="button"
+              onClick={(e) => open("search", e.currentTarget)}
+              aria-label="Search"
+              className={iconBtnClass}
+            >
+              <Search size={22} strokeWidth={1.5} />
+            </button>
           </div>
 
-          {/* Centre: Wordmark */}
+          {/* Centre: Wordmark (28px mobile, 40px desktop) */}
           <div className="flex items-center justify-self-center">
             <Link
               href="/v2"
@@ -107,24 +117,14 @@ export function HeaderV2() {
                 alt="Cocomishri"
                 width={573}
                 height={137}
-                className="h-8 lg:h-10 w-auto object-contain"
+                className="h-7 lg:h-10 w-auto object-contain"
                 loading="lazy"
               />
             </Link>
           </div>
 
-          {/* Right: Search, Account, Bag */}
+          {/* Right: Account + Bag */}
           <div className="flex items-center justify-self-end gap-0.5 sm:gap-1">
-            <button
-              ref={searchButtonRef}
-              type="button"
-              onClick={(e) => open("search", e.currentTarget)}
-              aria-label="Search"
-              className={iconBtnClass}
-            >
-              <Search size={22} strokeWidth={1.5} />
-            </button>
-
             <button
               ref={accountButtonRef}
               type="button"

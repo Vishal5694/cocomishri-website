@@ -15,7 +15,7 @@ export function CampaignTitle({
   return (
     <Tag
       className={cn(
-        "font-body font-semibold uppercase tracking-[0.06em] text-[32px] lg:text-[48px] leading-[1.15] [font-variation-settings:normal]",
+        "font-heading font-medium normal-case tracking-normal text-[32px] lg:text-[48px] leading-[1.15] [font-variation-settings:'SOFT'_75]",
         className
       )}
     >

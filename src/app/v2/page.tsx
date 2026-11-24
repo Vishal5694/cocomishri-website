@@ -253,8 +253,8 @@ export default function V2HomePage() {
               <BrandImage
                 imageKey="product-6"
                 ratioOverride="4/5"
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="w-full"
+                sizes="(min-width: 1024px) 448px, 100vw"
+                className="w-full lg:max-w-[448px] lg:max-h-[560px]"
               />
               <TextLink href="/collections/girls" variant="dark">
                 SHOP GIRLS
@@ -265,8 +265,8 @@ export default function V2HomePage() {
               <BrandImage
                 imageKey="product-7"
                 ratioOverride="4/5"
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="w-full"
+                sizes="(min-width: 1024px) 448px, 100vw"
+                className="w-full lg:max-w-[448px] lg:max-h-[560px]"
               />
               <TextLink href="/collections/baby-girls" variant="dark">
                 SHOP BABY GIRLS
@@ -287,9 +287,9 @@ export default function V2HomePage() {
           className="size-6 text-amber-500 absolute bottom-6 right-6 pointer-events-none"
         />
 
-        <div className="max-w-5xl mx-auto space-y-10">
+        <div className="max-w-7xl mx-auto space-y-10">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="eyebrow block text-caramel-100">
+            <span className="font-body text-[13px] font-semibold uppercase tracking-[0.08em] text-caramel-100 block">
               NAMING CEREMONY
             </span>
             <CampaignTitle as="h2" className="text-cream-50">
@@ -297,7 +297,7 @@ export default function V2HomePage() {
             </CampaignTitle>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {namingCeremonyGrid.map((item) => (
               <div
                 key={item.href}
@@ -305,9 +305,9 @@ export default function V2HomePage() {
               >
                 <BrandImage
                   imageKey={item.imageKey}
-                  ratioOverride="4/5"
-                  sizes="(min-width: 1024px) 45vw, 50vw"
-                  className="w-full"
+                  ratioOverride="3/4"
+                  sizes="(min-width: 1024px) 25vw, 50vw"
+                  className="w-full lg:max-h-[420px]"
                 />
                 <TextLink href={item.href} variant="cream">
                   {item.label}
