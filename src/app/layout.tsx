@@ -3,12 +3,7 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
 import { asset } from "@/lib/asset";
 import { PanelProvider } from "@/lib/ui/PanelContext";
-import {
-  TopBar,
-  Header,
-  Footer,
-  WhatsAppButton,
-} from "@/components/layout";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -47,13 +42,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-cream-50 text-cocoa-900">
         <PanelProvider>
-          <TopBar />
-          <Header />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppButton />
+          <SiteChrome>{children}</SiteChrome>
         </PanelProvider>
       </body>
     </html>

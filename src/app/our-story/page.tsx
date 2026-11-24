@@ -84,9 +84,7 @@ export default function OurStoryPage() {
           {/* Text column (desktop LEFT, mobile SECOND) */}
           <div className="order-2 lg:order-1 max-w-[560px] space-y-4">
             <div>
-              <span className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-caramel-700 block mb-2">
-                Chapter 1
-              </span>
+              <span className="eyebrow block mb-2">Chapter 1</span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-medium text-cocoa-900 leading-tight">
                 It All Began With Her
               </h2>
@@ -143,9 +141,7 @@ export default function OurStoryPage() {
           {/* Text column (desktop RIGHT, mobile SECOND) */}
           <div className="order-2 lg:order-2 max-w-[560px] space-y-4">
             <div>
-              <span className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-caramel-700 block mb-2">
-                Chapter 2
-              </span>
+              <span className="eyebrow block mb-2">Chapter 2</span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-medium text-cocoa-900 leading-tight">
                 Our Little Mishri
               </h2>
@@ -173,9 +169,7 @@ export default function OurStoryPage() {
           {/* Text column (desktop LEFT, mobile SECOND) */}
           <div className="order-2 lg:order-1 max-w-[560px] space-y-4">
             <div>
-              <span className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-caramel-700 block mb-2">
-                Chapter 3
-              </span>
+              <span className="eyebrow block mb-2">Chapter 3</span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-medium text-cocoa-900 leading-tight">
                 Made Before Our Own Eyes
               </h2>
@@ -235,9 +229,7 @@ export default function OurStoryPage() {
           {/* Text column (desktop RIGHT, mobile SECOND) */}
           <div className="order-2 lg:order-2 max-w-[560px] space-y-4">
             <div>
-              <span className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-caramel-700 block mb-2">
-                Chapter 4
-              </span>
+              <span className="eyebrow block mb-2">Chapter 4</span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-medium text-cocoa-900 leading-tight">
                 Softness You Can Feel
               </h2>
@@ -262,9 +254,7 @@ export default function OurStoryPage() {
         className="scroll-mt-[100px] lg:scroll-mt-[120px]"
       >
         <div className="max-w-[640px] mx-auto text-center space-y-4">
-          <span className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-caramel-700 block">
-            Chapter 5
-          </span>
+          <span className="eyebrow block">Chapter 5</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-medium text-cocoa-900 leading-tight">
             Our Promise to You
           </h2>

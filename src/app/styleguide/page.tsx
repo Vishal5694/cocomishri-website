@@ -10,8 +10,6 @@ import {
   Card,
   Sparkle,
   SparkleDivider,
-  CampaignTitle,
-  TextLink,
 } from "@/components/ui";
 
 export const metadata: Metadata = {
@@ -733,79 +731,6 @@ export default function StyleguidePage() {
                 <span className="text-xs text-cocoa-700 font-mono">/brand/mascot.svg</span>
               </Card>
             </div>
-          </section>
-
-          {/* 11. v2 Patterns */}
-          <section id="v2-patterns" className="space-y-6">
-            <div>
-              <h2 className="h2-style">v2 Patterns</h2>
-              <p className="text-cocoa-700 text-sm mt-1">
-                CampaignTitle, TextLink, the 4 colour blocks (cream text), and the rotating TopBar.
-              </p>
-            </div>
-
-            <Card bordered className="space-y-6">
-              <div>
-                <span className="eyebrow block mb-2">CampaignTitle</span>
-                <CampaignTitle as="p" className="text-cocoa-900">
-                  Sweet like Mishri. Soft like a hug.
-                </CampaignTitle>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-6">
-                <div>
-                  <span className="eyebrow block mb-1">TextLink (dark)</span>
-                  <TextLink href="/shop" variant="dark">
-                    SHOP ALL
-                  </TextLink>
-                </div>
-                <div className="bg-cocoa-900 px-4 py-2 rounded-card">
-                  <span className="eyebrow text-caramel-100 block mb-1">
-                    TextLink (cream)
-                  </span>
-                  <TextLink href="/our-story" variant="cream">
-                    READ OUR STORY
-                  </TextLink>
-                </div>
-              </div>
-
-              <div>
-                <span className="eyebrow block mb-2">TopBar (32px caramel-100)</span>
-                <div className="h-8 bg-caramel-100 text-cocoa-900 rounded-card flex items-center justify-center px-4 text-[13px] font-medium">
-                  {siteConfig.announcements[0]}
-                </div>
-              </div>
-
-              <div>
-                <span className="eyebrow block mb-2">4 Colour Blocks</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-cocoa-900 text-cream-50 rounded-card p-6 space-y-2">
-                    <span className="font-body text-[13px] font-semibold uppercase tracking-[0.08em] text-caramel-100 block">
-                      Cocoa Block
-                    </span>
-                    <p className="font-heading text-lg">cocoa-900 / cream-50</p>
-                  </div>
-                  <div className="bg-sage-700 text-cream-50 rounded-card p-6 space-y-2">
-                    <span className="font-body text-[13px] font-semibold uppercase tracking-[0.08em] text-cream-50/90 block">
-                      Sage Block
-                    </span>
-                    <p className="font-heading text-lg">sage-700 / cream-50</p>
-                  </div>
-                  <div className="bg-caramel-700 text-cream-50 rounded-card p-6 space-y-2">
-                    <span className="font-body text-[13px] font-semibold uppercase tracking-[0.08em] text-cream-50/90 block">
-                      Caramel Block
-                    </span>
-                    <p className="font-heading text-lg">caramel-700 / cream-50</p>
-                  </div>
-                  <div className="bg-blush-700 text-cream-50 rounded-card p-6 space-y-2">
-                    <span className="font-body text-[13px] font-semibold uppercase tracking-[0.08em] text-cream-50/90 block">
-                      Blush Block
-                    </span>
-                    <p className="font-heading text-lg">blush-700 / cream-50</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
           </section>
         </div>
       </div>

@@ -3,83 +3,111 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, Mail, User } from "lucide-react";
 import { asset } from "@/lib/asset";
+import { X, ChevronDown, Mail, MessageCircle, User } from "lucide-react";
 import { mainNav, NavItem, supportLinks } from "@/lib/navigation";
 import { siteConfig } from "@/lib/site-config";
+import { InstagramIcon } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  triggerRef?: React.RefObject<HTMLElement | null>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 export function MobileMenu({ isOpen, onClose, triggerRef }: MobileMenuProps) {
-  const [expandedItem, setExpandedItem] = React.useState<string | null>(null);
-  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
   const drawerRef = React.useRef<HTMLDivElement>(null);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [openAccordions, setOpenAccordions] = React.useState<Record<string, boolean>>({});
 
+  // Lock body scroll and handle focus trap
   React.useEffect(() => {
     if (!isOpen) return;
 
-    const prevOverflow = document.body.style.overflow;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
+
+    // Focus close button on open
+    setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 50);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
         onClose();
+        triggerRef.current?.focus();
         return;
       }
 
       if (e.key === "Tab" && drawerRef.current) {
         const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
 
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
         }
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      triggerRef?.current?.focus();
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose, triggerRef]);
 
+  const toggleAccordion = (label: string) => {
+    setOpenAccordions((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
+
+  const showWhatsApp =
+    siteConfig.whatsapp && !siteConfig.whatsapp.startsWith("PLACEHOLDER");
+
   if (!isOpen) return null;
 
+  const isHelpExpanded = !!openAccordions["Help"];
+
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 lg:hidden">
+      {/* Backdrop overlay */}
       <div
-        className="fixed inset-0 bg-cocoa-900/40 backdrop-blur-[2px] transition-opacity duration-300 ease-soft motion-reduce:transition-none"
         onClick={onClose}
         aria-hidden="true"
+        className="fixed inset-0 bg-cocoa-900/40 transition-opacity duration-300 ease-soft"
       />
 
-      {/* Drawer */}
+      {/* Drawer panel */}
       <div
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation menu"
-        className="relative z-10 w-full max-w-[380px] h-full bg-cream-50 text-cocoa-900 shadow-2xl flex flex-col overflow-hidden"
+        aria-label="Mobile navigation"
+        className={cn(
+          "fixed inset-y-0 left-0 w-[85%] max-w-[360px] bg-cream-50 text-cocoa-900 shadow-2xl flex flex-col z-50",
+          "animate-in slide-in-from-left duration-300 ease-soft overflow-hidden"
+        )}
       >
-        {/* Top bar */}
-        <div className="h-16 px-6 border-b border-sand-300 flex items-center justify-between shrink-0">
+        {/* Top bar with wordmark & close button */}
+        <div className="h-16 px-4 border-b border-sand-300 flex items-center justify-between shrink-0">
           <Link
             href="/"
             onClick={onClose}
@@ -98,7 +126,10 @@ export function MobileMenu({ isOpen, onClose, triggerRef }: MobileMenuProps) {
           <button
             ref={closeButtonRef}
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              triggerRef.current?.focus();
+            }}
             aria-label="Close menu"
             className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-100 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
           >
@@ -106,22 +137,19 @@ export function MobileMenu({ isOpen, onClose, triggerRef }: MobileMenuProps) {
           </button>
         </div>
 
-        {/* Nav list */}
-        <nav
-          aria-label="Mobile navigation"
-          className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-sand-300"
-        >
+        {/* Navigation list */}
+        <div className="flex-1 overflow-y-auto divide-y divide-sand-300">
           {mainNav.map((item: NavItem) => {
             const hasGroups = item.groups && item.groups.length > 0;
-            const isExpanded = expandedItem === item.label;
+            const isExpanded = !!openAccordions[item.label];
 
             if (!hasGroups) {
               return (
-                <div key={item.label} className="py-1">
+                <div key={item.label}>
                   <Link
                     href={item.href}
                     onClick={onClose}
-                    className="flex items-center min-h-[48px] text-base font-semibold text-cocoa-900 hover:text-blush-700 transition-colors"
+                    className="flex items-center min-h-[48px] px-5 text-base font-semibold text-cocoa-900 hover:bg-sand-100 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-[-2px]"
                   >
                     {item.label}
                   </Link>
@@ -130,46 +158,43 @@ export function MobileMenu({ isOpen, onClose, triggerRef }: MobileMenuProps) {
             }
 
             return (
-              <div key={item.label} className="py-1">
+              <div key={item.label} className="flex flex-col">
                 <button
                   type="button"
-                  onClick={() =>
-                    setExpandedItem(isExpanded ? null : item.label)
-                  }
+                  onClick={() => toggleAccordion(item.label)}
                   aria-expanded={isExpanded}
-                  className="w-full flex items-center justify-between min-h-[48px] text-base font-semibold text-cocoa-900 hover:text-blush-700 transition-colors text-left"
+                  className="w-full flex items-center justify-between min-h-[48px] px-5 text-base font-semibold text-cocoa-900 hover:bg-sand-100 transition-colors text-left focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-[-2px]"
                 >
                   <span>{item.label}</span>
                   <ChevronDown
                     size={18}
                     strokeWidth={1.5}
                     className={cn(
-                      "text-cocoa-500 transition-transform duration-300 ease-soft motion-reduce:transition-none",
+                      "text-cocoa-500 transition-transform duration-300 ease-soft shrink-0",
                       isExpanded && "rotate-180 text-cocoa-900"
                     )}
                   />
                 </button>
 
                 {isExpanded && (
-                  <div className="pb-4 pl-2 space-y-4">
+                  <div className="bg-sand-100/50 px-5 py-3 space-y-4 border-t border-sand-300/60">
                     {item.groups?.map((group) => (
-                      <div key={group.title} className="space-y-1">
-                        <span className="eyebrow block pt-2 pb-1">
+                      <div key={group.title} className="space-y-1.5">
+                        <span className="eyebrow block text-xs pt-1">
                           {group.title}
                         </span>
-                        <ul className="space-y-0.5">
+                        <div className="flex flex-col">
                           {group.links.map((link) => (
-                            <li key={link.href}>
-                              <Link
-                                href={link.href}
-                                onClick={onClose}
-                                className="min-h-[44px] flex items-center text-[15px] text-cocoa-700 hover:text-cocoa-900 hover:underline"
-                              >
-                                {link.label}
-                              </Link>
-                            </li>
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={onClose}
+                              className="flex items-center min-h-[44px] py-1 text-sm text-cocoa-700 hover:text-cocoa-900 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+                            >
+                              {link.label}
+                            </Link>
                           ))}
-                        </ul>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -178,42 +203,87 @@ export function MobileMenu({ isOpen, onClose, triggerRef }: MobileMenuProps) {
             );
           })}
 
-          {/* Support section */}
-          <div className="pt-4 pb-2 space-y-1">
-            <span className="eyebrow block pb-1">Support</span>
-            <ul className="space-y-0.5">
-              {supportLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className="min-h-[44px] flex items-center text-[15px] text-cocoa-700 hover:text-cocoa-900 hover:underline"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
+          {/* Help Accordion at bottom of Mobile Drawer with Support links from footer */}
+          <div className="flex flex-col">
+            <button
+              type="button"
+              onClick={() => toggleAccordion("Help")}
+              aria-expanded={isHelpExpanded}
+              className="w-full flex items-center justify-between min-h-[48px] px-5 text-base font-semibold text-cocoa-900 hover:bg-sand-100 transition-colors text-left focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-[-2px]"
+            >
+              <span>Help</span>
+              <ChevronDown
+                size={18}
+                strokeWidth={1.5}
+                className={cn(
+                  "text-cocoa-500 transition-transform duration-300 ease-soft shrink-0",
+                  isHelpExpanded && "rotate-180 text-cocoa-900"
+                )}
+              />
+            </button>
 
-        {/* Bottom links */}
-        <div className="px-6 py-4 border-t border-sand-300 bg-sand-100/60 flex items-center justify-between shrink-0">
-          <Link
-            href="/account"
-            onClick={onClose}
-            className="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-cocoa-900 hover:text-blush-700"
-          >
-            <User size={18} strokeWidth={1.5} />
-            <span>Account</span>
-          </Link>
-          <a
-            href={`mailto:${siteConfig.email}`}
-            className="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-cocoa-900 hover:text-blush-700"
-          >
-            <Mail size={18} strokeWidth={1.5} />
-            <span>{siteConfig.email}</span>
-          </a>
+            {isHelpExpanded && (
+              <div className="bg-sand-100/50 px-5 py-3 space-y-1 border-t border-sand-300/60">
+                <span className="eyebrow block text-xs pt-1 mb-1">
+                  Support
+                </span>
+                <div className="flex flex-col">
+                  {supportLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={onClose}
+                      className="flex items-center min-h-[44px] py-1 text-sm text-cocoa-700 hover:text-cocoa-900 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Unpinned info block at the end of the scrollable list */}
+          <div className="p-5 border-t border-sand-300 bg-sand-100/40 space-y-3">
+            <Link
+              href="/account"
+              onClick={onClose}
+              className="flex items-center gap-2.5 min-h-[44px] text-sm font-semibold text-cocoa-900 hover:text-blush-700 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            >
+              <User size={18} strokeWidth={1.5} />
+              <span>Account</span>
+            </Link>
+
+            <a
+              href={siteConfig.instagram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 min-h-[44px] text-sm text-cocoa-700 hover:text-cocoa-900 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            >
+              <InstagramIcon size={18} strokeWidth={1.5} />
+              <span>{siteConfig.instagram.handle}</span>
+            </a>
+
+            <a
+              href={`mailto:${siteConfig.email}`}
+              className="flex items-center gap-2.5 min-h-[44px] text-sm text-cocoa-700 hover:text-cocoa-900 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            >
+              <Mail size={18} strokeWidth={1.5} />
+              <span>{siteConfig.email}</span>
+            </a>
+
+            {showWhatsApp && (
+              <a
+                href={`https://wa.me/${siteConfig.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 min-h-[44px] text-sm text-cocoa-700 hover:text-cocoa-900 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+              >
+                <MessageCircle size={18} strokeWidth={1.5} />
+                <span>WhatsApp</span>
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
