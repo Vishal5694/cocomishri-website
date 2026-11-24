@@ -55,6 +55,7 @@ export function BrandImage({
           fill
           sizes={sizes}
           priority={priority}
+          loading={priority ? undefined : "lazy"}
           className="object-cover"
           style={{ objectPosition: entry?.position || "center" }}
         />

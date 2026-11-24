@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Truck, Eye, RotateCcw, Feather } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandImage } from "@/components/ui/BrandImage";
+import { HeroImage } from "@/components/home/HeroImage";
 import { Carousel } from "@/components/ui/Carousel";
 import { Section } from "@/components/ui/Section";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -67,32 +68,7 @@ export default function HomePage() {
     <div className="flex flex-col w-full overflow-x-hidden">
       {/* 2.1 Hero (full width, no container, exactly ONE h1) */}
       <Section noContainer bg="transparent" className="relative w-full">
-        {/* Desktop Image View (>= 1024px) */}
-        <div className="hidden lg:block relative w-full h-[78vh] min-h-[560px] overflow-hidden">
-          <BrandImage
-            imageKey="hero-desktop"
-            priority
-            sizes="100vw"
-            ratioOverride="auto"
-            className="w-full h-full rounded-none"
-            style={{ aspectRatio: "auto", height: "100%", width: "100%" }}
-          />
-        </div>
-
-        {/* Mobile Image View (< 1024px, height = min(56vh, 125vw)) */}
-        <div
-          className="lg:hidden w-full relative overflow-hidden"
-          style={{ height: "min(56vh, 125vw)" }}
-        >
-          <BrandImage
-            imageKey="hero-mobile"
-            priority
-            sizes="100vw"
-            ratioOverride="auto"
-            className="w-full h-full rounded-none"
-            style={{ aspectRatio: "auto", height: "100%", width: "100%" }}
-          />
-        </div>
+        <HeroImage />
 
         {/* Single Text Card: aligned with Container x-start on desktop, overlapping by 32px on mobile */}
         <div className="-mt-8 mx-4 lg:mt-0 lg:mx-0 lg:absolute lg:bottom-12 lg:left-[max(2rem,calc((100vw-72rem)/2+2rem))] z-10 bg-cream-50 rounded-card p-4 sm:p-8 lg:p-10 max-w-[520px] lg:max-w-[580px] shadow-lg relative">
@@ -161,7 +137,7 @@ export default function HomePage() {
                   <BrandImage
                     imageKey={occasion.imageKey}
                     ratioOverride="3/4"
-                    sizes="25vw"
+                    sizes="(min-width: 1024px) 25vw, 80vw"
                     className="w-full transition-transform duration-300 group-hover:scale-[1.02]"
                   />
                 </Link>
@@ -207,7 +183,7 @@ export default function HomePage() {
                   <BrandImage
                     imageKey={occasion.imageKey}
                     ratioOverride="3/4"
-                    sizes="80vw"
+                    sizes="(min-width: 1024px) 25vw, 80vw"
                     className="w-full transition-transform duration-300 group-hover:scale-[1.02]"
                   />
                 </Link>

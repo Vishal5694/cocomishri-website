@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import { siteConfig, formatINR } from "@/lib/site-config";
 import {
   Button,
@@ -178,12 +179,12 @@ export default function StyleguidePage() {
             <div className="flex items-center gap-4">
               <div className="relative shrink-0 flex items-center">
                 <Image
-                  src="/brand/wordmark.svg"
+                  src={asset("/brand/wordmark.svg")}
                   alt="Cocomishri"
                   width={573}
                   height={137}
                   className="h-8 md:h-10 w-auto object-contain"
-                  priority
+                  loading="lazy"
                 />
               </div>
               <div>
@@ -688,11 +689,12 @@ export default function StyleguidePage() {
               <Card bordered className="flex flex-col items-center text-center p-6">
                 <div className="w-full h-28 flex items-center justify-center bg-cream-50 rounded-card border border-sand-300 p-4">
                   <Image
-                    src="/brand/full-logo.svg"
+                    src={asset("/brand/full-logo.svg")}
                     alt="Cocomishri Full Logo"
                     width={573}
                     height={377}
                     className="max-h-20 w-auto object-contain"
+                    loading="lazy"
                   />
                 </div>
                 <span className="font-medium text-sm mt-4">Full Logo</span>
@@ -702,11 +704,12 @@ export default function StyleguidePage() {
               <Card bordered className="flex flex-col items-center text-center p-6">
                 <div className="w-full h-28 flex items-center justify-center bg-cream-50 rounded-card border border-sand-300 p-4">
                   <Image
-                    src="/brand/wordmark.svg"
+                    src={asset("/brand/wordmark.svg")}
                     alt="Cocomishri Wordmark"
                     width={573}
                     height={137}
                     className="max-h-12 w-auto object-contain"
+                    loading="lazy"
                   />
                 </div>
                 <span className="font-medium text-sm mt-4">Wordmark</span>
@@ -716,11 +719,12 @@ export default function StyleguidePage() {
               <Card bordered className="flex flex-col items-center text-center p-6">
                 <div className="w-full h-28 flex items-center justify-center bg-cream-50 rounded-card border border-sand-300 p-4">
                   <Image
-                    src="/brand/mascot.svg"
+                    src={asset("/brand/mascot.svg")}
                     alt="Cocomishri Mascot"
                     width={292}
                     height={231}
                     className="max-h-20 w-auto object-contain"
+                    loading="lazy"
                   />
                 </div>
                 <span className="font-medium text-sm mt-4">Mascot</span>

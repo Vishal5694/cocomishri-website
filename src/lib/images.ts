@@ -7,8 +7,7 @@ export interface ImageEntry {
   position?: string;
 }
 
-const u = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80`;
+const u = (id: string) => `https://images.unsplash.com/photo-${id}`;
 
 export const images = {
   "hero-desktop": {

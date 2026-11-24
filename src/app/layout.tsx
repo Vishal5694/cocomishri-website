@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
+import { asset } from "@/lib/asset";
 import { PanelProvider } from "@/lib/ui/PanelContext";
 import { Header } from "@/components/layout/Header";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
@@ -27,6 +28,9 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.tagline,
+  icons: {
+    icon: asset("/favicon.ico"),
+  },
 };
 
 export default function RootLayout({

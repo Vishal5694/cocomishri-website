@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, User, ShoppingBag, Menu, ChevronDown } from "lucide-react";
 import { mainNav, NavItem } from "@/lib/navigation";
+import { asset } from "@/lib/asset";
 import { useCartCount } from "@/lib/cart/useCartCount";
 import { usePanel } from "@/lib/ui/PanelContext";
 import { MobileMenu } from "./MobileMenu";
@@ -146,12 +147,12 @@ export function Header() {
               className="flex items-center min-h-[44px] focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
             >
               <Image
-                src="/brand/wordmark.svg"
+                src={asset("/brand/wordmark.svg")}
                 alt="Cocomishri"
                 width={573}
                 height={137}
                 className="h-8 lg:h-10 w-auto object-contain"
-                priority
+                loading="lazy"
               />
             </Link>
           </div>

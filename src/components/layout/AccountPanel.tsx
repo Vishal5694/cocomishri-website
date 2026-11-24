@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import { X } from "lucide-react";
 import { Panel } from "./Panel";
 import { Button } from "@/components/ui";
@@ -36,12 +37,12 @@ export function AccountPanel({ isOpen, onClose, triggerRef }: AccountPanelProps)
           className="flex items-center min-h-[44px] focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
         >
           <Image
-            src="/brand/wordmark.svg"
+            src={asset("/brand/wordmark.svg")}
             alt="Cocomishri"
             width={573}
             height={137}
             className="h-8 w-auto object-contain"
-            priority
+            loading="lazy"
           />
         </Link>
 

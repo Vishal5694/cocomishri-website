@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import {
   ChevronDown,
   Truck,
@@ -224,11 +225,12 @@ export function Footer() {
                 className="inline-flex items-center min-h-[44px] focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2 mb-2"
               >
                 <Image
-                  src="/brand/wordmark.svg"
+                  src={asset("/brand/wordmark.svg")}
                   alt="Cocomishri"
                   width={573}
                   height={137}
                   className="h-9 w-auto object-contain"
+                  loading="lazy"
                 />
               </Link>
               <p className="font-heading text-lg font-medium text-cocoa-900 mb-2">
