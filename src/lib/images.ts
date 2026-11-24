@@ -238,6 +238,28 @@ export const images = {
     shot: "Baby playing freely in soft clothes",
     ratio: "4/5",
   },
+  // (v2 experimental home page)
+  "v2-slide-2": {
+    src: null,
+    sampleSrc: u("1780329941775-3303f3122ce6"),
+    alt: "A mother holding her baby by a window",
+    shot: "Parent and baby by a window, soft daylight, landscape",
+    ratio: "16/9",
+  },
+  "v2-slide-3": {
+    src: null,
+    sampleSrc: u("1641867943064-51eb03c560b8"),
+    alt: "A mother smiling at her baby",
+    shot: "Parent and baby smiling, landscape",
+    ratio: "16/9",
+  },
+  "v2-banner-1": {
+    src: null,
+    sampleSrc: u("1608158432865-ed2b759b6f97"),
+    alt: "A mother and baby touching noses",
+    shot: "Tender parent-baby moment, landscape, space for centred text",
+    ratio: "16/9",
+  },
 } as const satisfies Record<string, ImageEntry>;
 
 export type ImageKey = keyof typeof images;
