@@ -1,26 +1,156 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Cocomishri Brand Palette */
+  --color-cocoa-900: #452104;
+  --color-cocoa-700: #6B4A35;
+  --color-cocoa-500: #8C6B55;
+  --color-blush-700: #9A4F45;
+  --color-blush-500: #D4917F;
+  --color-blush-100: #F8E6DF;
+  --color-caramel-700: #94521F;
+  --color-caramel-500: #D18F5A;
+  --color-caramel-100: #F7E8D8;
+  --color-sage-700: #56633A;
+  --color-sage-500: #98A865;
+  --color-sage-100: #EEF0DF;
+  --color-cream-50: #FCF8F2;
+  --color-sand-100: #F4EADD;
+  --color-sand-300: #E3CFB6;
+  --color-amber-500: #D27821;
+
+  /* Radius tokens */
+  --radius-card: 16px;
+  --radius-image: 24px;
+  --radius-pill: 9999px;
+
+  /* Motion tokens */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-300: 300ms;
+  --duration-400: 400ms;
+  --duration-500: 500ms;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-nunito-sans), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-cream-50);
+    color: var(--color-cocoa-900);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 17px;
+    }
+  }
+
+  h1,
+  .h1-style,
+  h2,
+  .h2-style,
+  h3,
+  .h3-style {
+    font-family: var(--font-heading);
+    font-variation-settings: "SOFT" 75;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-cocoa-900);
+  }
+
+  h1,
+  .h1-style {
+    font-size: 36px;
+  }
+
+  @media (min-width: 1024px) {
+    h1,
+    .h1-style {
+      font-size: 56px;
+    }
+  }
+
+  h2,
+  .h2-style {
+    font-size: 28px;
+  }
+
+  @media (min-width: 1024px) {
+    h2,
+    .h2-style {
+      font-size: 40px;
+    }
+  }
+
+  h3,
+  .h3-style {
+    font-size: 22px;
+  }
+
+  @media (min-width: 1024px) {
+    h3,
+    .h3-style {
+      font-size: 28px;
+    }
+  }
+
+  small {
+    font-size: 14px;
+  }
+
+  a {
+    color: var(--color-blush-700);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  :focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-blush-700);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-caramel-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

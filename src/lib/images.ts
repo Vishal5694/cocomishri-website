@@ -1,0 +1,244 @@
+export interface ImageEntry {
+  src: string | null;
+  sampleSrc: string | null;
+  alt: string;
+  shot: string;
+  ratio: string;
+  position?: string;
+}
+
+const u = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80`;
+
+export const images = {
+  "hero-desktop": {
+    src: null,
+    sampleSrc: u("1765010608917-23001bd2415c"),
+    alt: "A mother holding her baby",
+    shot: "Baby/toddler, natural light, cream backdrop, subject right",
+    ratio: "16/9",
+    position: "center 30%",
+  },
+  "hero-mobile": {
+    src: null,
+    sampleSrc: u("1560707857-b897819e06fb"),
+    alt: "Baby in a Cocomishri outfit",
+    shot: "Same scene, portrait, subject in upper half",
+    ratio: "4/5",
+    position: "center 25%",
+  },
+  "occasion-naming-ceremony": {
+    src: null,
+    sampleSrc: u("1604917621956-10dfa7cce2e7"),
+    alt: "Naming ceremony outfit",
+    shot: "Baby in ceremony outfit in a parent's arms",
+    ratio: "3/4",
+  },
+  "occasion-first-birthday": {
+    src: null,
+    sampleSrc: u("1757693075207-32944391b4de"),
+    alt: "First birthday outfit",
+    shot: "One-year-old in a celebration outfit",
+    ratio: "3/4",
+  },
+  "occasion-festive": {
+    src: null,
+    sampleSrc: u("1597294150753-b6e790b68d1c"),
+    alt: "Festive outfit",
+    shot: "Child in festive wear, marigolds, warm light",
+    ratio: "3/4",
+    position: "75% center",
+  },
+  "occasion-everyday-comfort": {
+    src: null,
+    sampleSrc: u("1610674632272-2d3e9a345453"),
+    alt: "Everyday comfort outfit",
+    shot: "Child playing at home in everyday wear",
+    ratio: "3/4",
+  },
+  "gifting": {
+    src: null,
+    sampleSrc: u("1751450236048-aa1981f7bc2d"),
+    alt: "Gift-ready outfit with a note",
+    shot: "Flat lay: folded outfit, handwritten note",
+    ratio: "4/5",
+  },
+  "story": {
+    src: null,
+    sampleSrc: u("1530047625168-4b29bfbbe1fc"),
+    alt: "Parent holding a baby",
+    shot: "Parent's hands with baby, or fabric being checked",
+    ratio: "4/5",
+  },
+  "why-cocomishri": {
+    src: null,
+    sampleSrc: u("1621198059871-0d5f9b449233"),
+    alt: "Soft fabric close-up",
+    shot: "Close-up of soft fabric / folded pieces",
+    ratio: "4/5",
+  },
+  "product-1": {
+    src: null,
+    sampleSrc: u("1569974641446-22542de88536"),
+    alt: "Product 1",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-2": {
+    src: null,
+    sampleSrc: u("1777462985111-9da64fb2e6e6"),
+    alt: "Product 2",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-3": {
+    src: null,
+    sampleSrc: u("1549588974-98aae09c3845"),
+    alt: "Product 3",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-4": {
+    src: null,
+    sampleSrc: u("1724891793770-49b41a5c9731"),
+    alt: "Product 4",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-5": {
+    src: null,
+    sampleSrc: u("1777397660834-67c6d0eabe15"),
+    alt: "Product 5",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-6": {
+    src: null,
+    sampleSrc: u("1599624427857-461fd60c23e5"),
+    alt: "Product 6",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-7": {
+    src: null,
+    sampleSrc: u("1630305130588-0e08d0d6965e"),
+    alt: "Product 7",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "product-8": {
+    src: null,
+    sampleSrc: u("1597430755294-d6e010d67279"),
+    alt: "Product 8",
+    shot: "Baby outfit",
+    ratio: "4/5",
+  },
+  "instagram-1": {
+    src: null,
+    sampleSrc: u("1608365151231-7dbed3034787"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-2": {
+    src: null,
+    sampleSrc: u("1578178107900-e8ef3855b9cf"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-3": {
+    src: null,
+    sampleSrc: u("1662916269397-3c1a71515735"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-4": {
+    src: null,
+    sampleSrc: u("1700751616070-f7ed13448630"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-5": {
+    src: null,
+    sampleSrc: u("1504437484202-613bb51ce359"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-6": {
+    src: null,
+    sampleSrc: u("1583710457367-47de0ea21fef"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-7": {
+    src: null,
+    sampleSrc: u("1551811800-00e1021bd5a1"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-8": {
+    src: null,
+    sampleSrc: u("1627297713549-4a630282c760"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-9": {
+    src: null,
+    sampleSrc: u("1686668108595-3c2171a8fc78"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  "instagram-10": {
+    src: null,
+    sampleSrc: u("1795151943972-395447a66568"),
+    alt: "Cocomishri on Instagram",
+    shot: "Instagram post",
+    ratio: "1/1",
+  },
+  // (Our Story page, used in Phase 4:)
+  "story-hero": {
+    src: null,
+    sampleSrc: u("1581952976057-3a95405e28b0"),
+    alt: "A parent holding a baby",
+    shot: "Warm family moment, natural light",
+    ratio: "16/9",
+  },
+  "story-ch1": {
+    src: null,
+    sampleSrc: u("1686668108595-3c2171a8fc78"),
+    alt: "A parent holding a baby at home",
+    shot: "Parent and baby, calm, soft light",
+    ratio: "4/5",
+  },
+  "story-ch2": {
+    src: null,
+    sampleSrc: u("1769259362622-e8d3a13dc7ec"),
+    alt: "Sugar crystals in a glass jar",
+    shot: "Mishri crystals in a small bowl",
+    ratio: "4/5",
+  },
+  "story-ch3": {
+    src: null,
+    sampleSrc: u("1773511237767-0e324389922a"),
+    alt: "Hands sewing fabric",
+    shot: "Hands checking fabric and stitching",
+    ratio: "4/5",
+  },
+  "story-ch4": {
+    src: null,
+    sampleSrc: u("1795151943972-395447a66568"),
+    alt: "A baby crawling in a soft dress",
+    shot: "Baby playing freely in soft clothes",
+    ratio: "4/5",
+  },
+} as const satisfies Record<string, ImageEntry>;
+
+export type ImageKey = keyof typeof images;
