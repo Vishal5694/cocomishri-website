@@ -99,13 +99,13 @@ export function MenuDrawer({
     }
   }, [pathname]);
 
-  // Move focus to Back button when a sub-menu opens
+  // Move focus to Back button when a sub-menu opens (after slide animation starts)
   React.useEffect(() => {
     if (isOpen && activeSubMenu !== null) {
-      const raf = window.requestAnimationFrame(() => {
+      const timer = window.setTimeout(() => {
         backBtnRef.current?.focus();
-      });
-      return () => window.cancelAnimationFrame(raf);
+      }, 50);
+      return () => window.clearTimeout(timer);
     }
   }, [isOpen, activeSubMenu]);
 
