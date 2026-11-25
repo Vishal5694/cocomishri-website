@@ -3,10 +3,14 @@
 import * as React from "react";
 import { MessageCircle } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
+import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
 
 export function WhatsAppButton() {
+  const cfg = useSectionConfig("site-header");
   const isAvailable =
-    siteConfig.whatsapp && !siteConfig.whatsapp.startsWith("PLACEHOLDER");
+    cfg.whatsappOn &&
+    siteConfig.whatsapp &&
+    !siteConfig.whatsapp.startsWith("PLACEHOLDER");
 
   if (!isAvailable) return null;
 

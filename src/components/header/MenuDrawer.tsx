@@ -31,6 +31,8 @@ import { useRecentlyViewed } from "@/lib/storage/useRecentlyViewed";
 import { siteConfig } from "@/lib/site-config";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { getBrandHex } from "@/lib/brand-colors";
 
 interface MenuDrawerProps {
   isOpen: boolean;
@@ -205,9 +207,14 @@ export function MenuDrawer({
 
   if (!isOpen) return null;
 
+  const cfg = useSectionConfig("site-header");
+  const drawerBgHex = getBrandHex(cfg.drawerBg);
   const currentDeptContent = drawerNav[activeTab];
   const currentSubMenuObj = drawerMore.find((m) => m.id === activeSubMenu);
   const isSubMenuOpen = activeSubMenu !== null;
+  const visibleDrawerMore = cfg.showRecentlyViewed
+    ? drawerMore
+    : drawerMore.filter((m) => m.id !== "recently-viewed");
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -218,13 +225,19 @@ export function MenuDrawer({
         aria-hidden="true"
       />
 
-      {/* Drawer (LEFT, 400px desktop / 100% mobile) */}
+      {/* Drawer (LEFT, configurable desktop width / 100% mobile) */}
       <div
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className="relative z-10 w-full sm:w-[400px] max-w-full h-full bg-cream-50 text-cocoa-900 shadow-2xl flex flex-col overflow-hidden"
+        style={
+          {
+            "--cm-drawer-w": `${cfg.drawerWidth}px`,
+            backgroundColor: drawerBgHex,
+          } as React.CSSProperties
+        }
+        className="relative z-10 w-full sm:w-[var(--cm-drawer-w)] max-w-full h-full text-cocoa-900 shadow-2xl flex flex-col overflow-hidden"
       >
         {/* Top Row: Close left; Search, Account, Bag right */}
         <div className="h-16 px-4 border-b border-sand-300 flex items-center justify-between shrink-0">
@@ -296,7 +309,8 @@ export function MenuDrawer({
             <div
               role="tablist"
               aria-label="Departments"
-              className="flex items-center justify-between px-4 border-b border-sand-300 bg-cream-50 overflow-x-auto"
+              style={{ backgroundColor: drawerBgHex }}
+              className="flex items-center justify-between px-4 border-b border-sand-300 overflow-x-auto"
             >
               {departments.map((dept, idx) => {
                 const isSelected = activeTab === dept.id;
@@ -315,10 +329,20 @@ export function MenuDrawer({
                     onClick={() => handleTabSelect(dept.id)}
                     onKeyDown={(e) => handleTabKeyDown(e, idx)}
                     className={cn(
-                      "min-h-[48px] px-2 py-2 font-body font-semibold uppercase text-[13px] tracking-[0.04em] whitespace-nowrap border-b-2 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-[-2px]",
-                      isSelected
-                        ? "border-cocoa-900 text-cocoa-900"
-                        : "border-transparent text-cocoa-700 hover:text-cocoa-900"
+                      "font-body font-semibold uppercase text-[13px] tracking-[0.04em] whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-[-2px]",
+                      cfg.tabStyle === "pill"
+                        ? cn(
+                            "min-h-[36px] my-1.5 px-3 py-1.5 rounded-pill",
+                            isSelected
+                              ? "bg-cocoa-900 text-cream-50"
+                              : "text-cocoa-700 hover:text-cocoa-900 hover:bg-sand-100"
+                          )
+                        : cn(
+                            "min-h-[48px] px-2 py-2 border-b-2",
+                            isSelected
+                              ? "border-cocoa-900 text-cocoa-900"
+                              : "border-transparent text-cocoa-700 hover:text-cocoa-900"
+                          )
                     )}
                   >
                     {dept.label}
@@ -339,7 +363,8 @@ export function MenuDrawer({
                 <Link
                   href={currentDeptContent.highlight.href}
                   onClick={onClose}
-                  className="min-h-[48px] flex items-center text-[15px] font-semibold text-blush-700 hover:underline"
+                  style={{ color: getBrandHex(cfg.highlightColor) }}
+                  className="min-h-[48px] flex items-center text-[15px] font-semibold hover:underline"
                 >
                   {currentDeptContent.highlight.label}
                 </Link>
@@ -405,7 +430,7 @@ export function MenuDrawer({
 
             {/* Grey Section (bg sand-100): Occasions, Our Story, Recently viewed */}
             <div className="bg-sand-100 px-5 divide-y divide-sand-300 border-t border-b border-sand-300">
-              {drawerMore.map((item) => (
+              {visibleDrawerMore.map((item) => (
                 <button
                   key={item.id}
                   ref={(el) => {
@@ -468,37 +493,41 @@ export function MenuDrawer({
               {/* India | Global + Instagram row */}
               <div className="py-2 space-y-2">
                 <div className="min-h-[44px] flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-cocoa-900">
-                    <Globe size={18} strokeWidth={1.5} />
-                    <button
-                      type="button"
-                      onClick={() => setShowGlobalNote(false)}
-                      className={cn(
-                        "min-h-[44px] px-1 inline-flex items-center gap-1",
-                        !showGlobalNote
-                          ? "font-semibold underline underline-offset-4"
-                          : "text-cocoa-700"
-                      )}
-                    >
-                      <span>{siteConfig.countries.current}</span>
-                      {!showGlobalNote && (
-                        <Check size={14} strokeWidth={2} className="text-blush-700" />
-                      )}
-                    </button>
-                    <span className="text-cocoa-500">|</span>
-                    <button
-                      type="button"
-                      onClick={() => setShowGlobalNote(true)}
-                      className={cn(
-                        "min-h-[44px] px-1 inline-flex items-center",
-                        showGlobalNote
-                          ? "font-semibold underline underline-offset-4"
-                          : "text-cocoa-700 hover:text-cocoa-900"
-                      )}
-                    >
-                      Global
-                    </button>
-                  </div>
+                  {cfg.showCountryInDrawer ? (
+                    <div className="flex items-center gap-2 text-sm font-medium text-cocoa-900">
+                      <Globe size={18} strokeWidth={1.5} />
+                      <button
+                        type="button"
+                        onClick={() => setShowGlobalNote(false)}
+                        className={cn(
+                          "min-h-[44px] px-1 inline-flex items-center gap-1",
+                          !showGlobalNote
+                            ? "font-semibold underline underline-offset-4"
+                            : "text-cocoa-700"
+                        )}
+                      >
+                        <span>{siteConfig.countries.current}</span>
+                        {!showGlobalNote && (
+                          <Check size={14} strokeWidth={2} className="text-blush-700" />
+                        )}
+                      </button>
+                      <span className="text-cocoa-500">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowGlobalNote(true)}
+                        className={cn(
+                          "min-h-[44px] px-1 inline-flex items-center",
+                          showGlobalNote
+                            ? "font-semibold underline underline-offset-4"
+                            : "text-cocoa-700 hover:text-cocoa-900"
+                        )}
+                      >
+                        Global
+                      </button>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
 
                   <a
                     href={siteConfig.instagram.url}
@@ -511,7 +540,7 @@ export function MenuDrawer({
                   </a>
                 </div>
 
-                {showGlobalNote && (
+                {cfg.showCountryInDrawer && showGlobalNote && (
                   <div className="p-3 rounded-[12px] bg-sand-100 text-xs text-cocoa-700 leading-relaxed space-y-1">
                     <p>{siteConfig.countries.global.note}</p>
                     <a
@@ -526,51 +555,54 @@ export function MenuDrawer({
             </div>
 
             {/* Newsletter Box (bg sand-100) */}
-            <div className="bg-sand-100 px-5 py-6 border-t border-sand-300 space-y-3">
-              <p className="font-heading text-[20px] font-medium text-cocoa-900">
-                Join our little world
-              </p>
-
-              {isSubscribed ? (
-                <p className="text-sm text-cocoa-900 bg-cream-50 border border-sand-300 rounded-[12px] p-3">
-                  Thank you for joining our little world. We&apos;ll be in touch
-                  soon.
+            {cfg.showNewsletter && (
+              <div className="bg-sand-100 px-5 py-6 border-t border-sand-300 space-y-3">
+                <p className="font-heading text-[20px] font-medium text-cocoa-900">
+                  Join our little world
                 </p>
-              ) : (
-                <form
-                  onSubmit={handleNewsletterSubmit}
-                  className="space-y-2"
-                  noValidate
-                >
-                  <Input
-                    type="email"
-                    label="Email address"
-                    placeholder="Email address"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (emailError) setEmailError("");
-                    }}
-                    error={emailError}
-                    className="bg-cream-50"
-                  />
-                  <button
-                    type="submit"
-                    className="min-h-[44px] inline-flex items-center text-sm font-semibold text-cocoa-900 hover:text-blush-700 underline underline-offset-4"
+
+                {isSubscribed ? (
+                  <p className="text-sm text-cocoa-900 bg-cream-50 border border-sand-300 rounded-[12px] p-3">
+                    Thank you for joining our little world. We&apos;ll be in touch
+                    soon.
+                  </p>
+                ) : (
+                  <form
+                    onSubmit={handleNewsletterSubmit}
+                    className="space-y-2"
+                    noValidate
                   >
-                    Sign me up
-                  </button>
-                </form>
-              )}
-            </div>
+                    <Input
+                      type="email"
+                      label="Email address"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailError) setEmailError("");
+                      }}
+                      error={emailError}
+                      className="bg-cream-50"
+                    />
+                    <button
+                      type="submit"
+                      className="min-h-[44px] inline-flex items-center text-sm font-semibold text-cocoa-900 hover:text-blush-700 underline underline-offset-4"
+                    >
+                      Sign me up
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Slide-In Sub-Menu View */}
           <div
             aria-hidden={!isSubMenuOpen}
             inert={!isSubMenuOpen}
+            style={{ backgroundColor: drawerBgHex }}
             className={cn(
-              "absolute inset-0 bg-cream-50 flex flex-col overflow-y-auto transition-transform duration-300 ease-soft motion-reduce:transition-none",
+              "absolute inset-0 flex flex-col overflow-y-auto transition-transform duration-300 ease-soft motion-reduce:transition-none",
               isSubMenuOpen
                 ? "translate-x-0"
                 : "translate-x-full pointer-events-none"

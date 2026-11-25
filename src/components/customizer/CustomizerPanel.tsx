@@ -12,18 +12,33 @@ import {
   Share2,
   Copy,
 } from "lucide-react";
-import { homeHeroSection } from "@/lib/customizer/registry";
+import {
+  homeHeroSection,
+  siteHeaderSection,
+  customizerSections,
+  type SectionId,
+} from "@/lib/customizer/registry";
 import type { Option, OptionGroup } from "@/lib/customizer/types";
 import {
   useCustomizer,
-  useSectionConfig,
   encodeBase64Utf8,
+  type ConfigMap,
 } from "@/lib/customizer/CustomizerContext";
 import type { HeroConfig, SlideSetting } from "@/lib/hero-config";
+import type { HeaderConfig, TopBarMessageSetting } from "@/lib/header-config";
+import {
+  brandColors,
+  contrastRatio,
+  getBrandHex,
+  type BrandColorKey,
+  type LogoColorKey,
+} from "@/lib/brand-colors";
+import { siteConfig } from "@/lib/site-config";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { PhonePreview } from "./PhonePreview";
 import { cn } from "@/lib/utils";
 
-const GROUPS: OptionGroup[] = [
+const HERO_GROUPS: OptionGroup[] = [
   "Layout",
   "Slides",
   "Text",
@@ -32,7 +47,23 @@ const GROUPS: OptionGroup[] = [
   "Photos",
 ];
 
-function buildReadableSummary(config: HeroConfig): string {
+const HEADER_GROUPS: OptionGroup[] = [
+  "Top bar",
+  "Logo",
+  "Header bar",
+  "Over the hero",
+  "Scrolling",
+  "Right side",
+  "Drawer",
+];
+
+function formatColorValue(val: string): string {
+  if (val === "original") return "original";
+  const found = brandColors.find((c) => c.key === val);
+  return found ? `${found.key} ${found.hex}` : val;
+}
+
+function buildHeroSummary(config: HeroConfig): string {
   const lines: string[] = ["HOME HERO SETTINGS", ""];
 
   for (const opt of homeHeroSection.options) {
@@ -74,14 +105,89 @@ function buildReadableSummary(config: HeroConfig): string {
   return lines.join("\n");
 }
 
+function buildHeaderSummary(config: HeaderConfig): string {
+  const lines: string[] = ["HEADER SETTINGS", ""];
+
+  for (const opt of siteHeaderSection.options) {
+    if (opt.kind === "choice") {
+      const val = String(config[opt.key as keyof HeaderConfig] ?? "");
+      const choice = opt.choices.find((c) => c.value === val);
+      lines.push(`${opt.label}: ${choice ? choice.label : val}`);
+    } else if (opt.kind === "toggle") {
+      const val = Boolean(config[opt.key as keyof HeaderConfig]);
+      lines.push(`${opt.label}: ${val ? "On" : "Off"}`);
+    } else if (opt.kind === "range") {
+      const val = config[opt.key as keyof HeaderConfig];
+      lines.push(`${opt.label}: ${val}${opt.unit ?? ""}`);
+    } else if (opt.kind === "color") {
+      const val = String(config[opt.key as keyof HeaderConfig] ?? "");
+      lines.push(`${opt.label}: ${formatColorValue(val)}`);
+    }
+  }
+
+  lines.push("", "Top bar messages (in order):");
+  config.topBarMessages.forEach((m, idx) => {
+    const text = siteConfig.topBarMessages[m.id] ?? "";
+    lines.push(`${idx + 1}. [${m.enabled ? "ON" : "OFF"}] ${text}`);
+  });
+
+  lines.push("", "JSON:", JSON.stringify(config, null, 2));
+  return lines.join("\n");
+}
+
+function ContrastBadge({
+  label,
+  fgHex,
+  bgHex,
+  minRatio,
+  note,
+}: {
+  label: string;
+  fgHex: string;
+  bgHex: string;
+  minRatio: number;
+  note?: string;
+}) {
+  const ratio = contrastRatio(fgHex, bgHex);
+  const ok = ratio >= minRatio;
+  return (
+    <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[10px] bg-sand-100 border border-sand-300 text-[12px]">
+      <div className="min-w-0">
+        <span className="font-medium text-cocoa-900">{label}</span>
+        {note && (
+          <span className="block text-[11px] text-cocoa-700">{note}</span>
+        )}
+      </div>
+      <span
+        className={cn(
+          "font-semibold tabular-nums shrink-0",
+          ok ? "text-sage-700" : "text-blush-700"
+        )}
+      >
+        {ratio.toFixed(1)}:1 {ok ? "✓" : "– hard to read"}
+      </span>
+    </div>
+  );
+}
+
 export function CustomizerPanel() {
-  const config = useSectionConfig("home-hero");
-  const { updateConfig, resetConfig } = useCustomizer();
+  const { configs, updateConfig, resetConfig } = useCustomizer();
+  const [activeSection, setActiveSection] =
+    React.useState<SectionId>("home-hero");
+  const [copyScope, setCopyScope] = React.useState<"section" | "all">(
+    "section"
+  );
+
+  const heroConfig = configs["home-hero"];
+  const headerConfig = configs["site-header"];
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [showPhonePreview, setShowPhonePreview] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
   const [copiedMsg, setCopiedMsg] = React.useState<string | null>(null);
+  const [hoveredColor, setHoveredColor] = React.useState<
+    Record<string, string | null>
+  >({});
   const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
     Layout: true,
     Slides: true,
@@ -89,6 +195,13 @@ export function CustomizerPanel() {
     "Motion & controls": false,
     Button: false,
     Photos: false,
+    "Top bar": true,
+    Logo: true,
+    "Header bar": false,
+    "Over the hero": false,
+    Scrolling: false,
+    "Right side": false,
+    Drawer: false,
   });
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -132,7 +245,7 @@ export function CustomizerPanel() {
   const handleCopyShareLink = async () => {
     try {
       const encoded = encodeURIComponent(
-        encodeBase64Utf8(JSON.stringify(config))
+        encodeBase64Utf8(JSON.stringify(configs))
       );
       const url = `${window.location.origin}${window.location.pathname}${window.location.search}#cm=${encoded}`;
       await navigator.clipboard.writeText(url);
@@ -144,7 +257,12 @@ export function CustomizerPanel() {
 
   const handleCopySettings = async () => {
     try {
-      const text = buildReadableSummary(config);
+      const text =
+        copyScope === "all"
+          ? [buildHeroSummary(heroConfig), "", "---", "", buildHeaderSummary(headerConfig)].join("\n")
+          : activeSection === "home-hero"
+          ? buildHeroSummary(heroConfig)
+          : buildHeaderSummary(headerConfig);
       await navigator.clipboard.writeText(text);
       flashCopied("Copied");
     } catch {
@@ -153,24 +271,64 @@ export function CustomizerPanel() {
   };
 
   const updateSlide = (idx: number, patch: Partial<SlideSetting>) => {
-    const nextSlides = config.slides.map((s, i) =>
+    const nextSlides = heroConfig.slides.map((s, i) =>
       i === idx ? { ...s, ...patch } : s
     );
-    updateConfig("home-hero", { ...config, slides: nextSlides });
+    updateConfig("home-hero", { ...heroConfig, slides: nextSlides });
   };
 
   const moveSlide = (idx: number, delta: -1 | 1) => {
     const target = idx + delta;
-    if (target < 0 || target >= config.slides.length) return;
-    const nextSlides = [...config.slides];
+    if (target < 0 || target >= heroConfig.slides.length) return;
+    const nextSlides = [...heroConfig.slides];
     const [item] = nextSlides.splice(idx, 1);
     nextSlides.splice(target, 0, item);
-    updateConfig("home-hero", { ...config, slides: nextSlides });
+    updateConfig("home-hero", { ...heroConfig, slides: nextSlides });
+  };
+
+  const updateTopBarMsg = (
+    idx: number,
+    patch: Partial<TopBarMessageSetting>
+  ) => {
+    const nextMsgs = headerConfig.topBarMessages.map((m, i) =>
+      i === idx ? { ...m, ...patch } : m
+    );
+    updateConfig("site-header", { ...headerConfig, topBarMessages: nextMsgs });
+  };
+
+  const moveTopBarMsg = (idx: number, delta: -1 | 1) => {
+    const target = idx + delta;
+    if (target < 0 || target >= headerConfig.topBarMessages.length) return;
+    const nextMsgs = [...headerConfig.topBarMessages];
+    const [item] = nextMsgs.splice(idx, 1);
+    nextMsgs.splice(target, 0, item);
+    updateConfig("site-header", { ...headerConfig, topBarMessages: nextMsgs });
+  };
+
+  const currentConfig =
+    activeSection === "home-hero" ? heroConfig : headerConfig;
+
+  const setField = (key: string, value: unknown) => {
+    if (activeSection === "home-hero") {
+      updateConfig("home-hero", {
+        ...heroConfig,
+        [key]: value,
+      } as HeroConfig);
+    } else {
+      const numericKeys = new Set(["topBarHeight", "drawerWidth"]);
+      const parsedVal = numericKeys.has(key) ? Number(value) : value;
+      updateConfig("site-header", {
+        ...headerConfig,
+        [key]: parsedVal,
+      } as HeaderConfig);
+    }
   };
 
   const renderOption = (opt: Option) => {
+    const rawRecord = currentConfig as unknown as Record<string, unknown>;
+
     if (opt.kind === "choice") {
-      const value = String(config[opt.key as keyof HeroConfig] ?? "");
+      const value = String(rawRecord[opt.key] ?? "");
       return (
         <div key={opt.key} className="space-y-1.5">
           <label
@@ -182,12 +340,7 @@ export function CustomizerPanel() {
           <select
             id={`cm-opt-${opt.key}`}
             value={value}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...config,
-                [opt.key]: e.target.value,
-              })
-            }
+            onChange={(e) => setField(opt.key, e.target.value)}
             className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
           >
             {opt.choices.map((c) => (
@@ -201,7 +354,7 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "toggle") {
-      const checked = Boolean(config[opt.key as keyof HeroConfig]);
+      const checked = Boolean(rawRecord[opt.key]);
       return (
         <label
           key={opt.key}
@@ -213,12 +366,7 @@ export function CustomizerPanel() {
           <input
             type="checkbox"
             checked={checked}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...config,
-                [opt.key]: e.target.checked,
-              })
-            }
+            onChange={(e) => setField(opt.key, e.target.checked)}
             className="size-5 accent-cocoa-900 cursor-pointer"
           />
         </label>
@@ -226,7 +374,7 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "range") {
-      const value = Number(config[opt.key as keyof HeroConfig] ?? opt.min);
+      const value = Number(rawRecord[opt.key] ?? opt.min);
       return (
         <div key={opt.key} className="space-y-1">
           <div className="flex items-center justify-between text-[13px] font-semibold text-cocoa-900">
@@ -243,12 +391,7 @@ export function CustomizerPanel() {
             max={opt.max}
             step={opt.step}
             value={value}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...config,
-                [opt.key]: Number(e.target.value),
-              })
-            }
+            onChange={(e) => setField(opt.key, Number(e.target.value))}
             className="w-full accent-cocoa-900 cursor-pointer"
           />
         </div>
@@ -256,7 +399,7 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "text") {
-      const value = String(config[opt.key as keyof HeroConfig] ?? "");
+      const value = String(rawRecord[opt.key] ?? "");
       return (
         <div key={opt.key} className="space-y-1">
           <label
@@ -272,14 +415,100 @@ export function CustomizerPanel() {
             maxLength={opt.maxLength}
             placeholder={opt.placeholder}
             onChange={(e) =>
-              updateConfig("home-hero", {
-                ...config,
-                [opt.key]: e.target.value.slice(0, opt.maxLength),
-              })
+              setField(opt.key, e.target.value.slice(0, opt.maxLength))
             }
             className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
           />
         </div>
+      );
+    }
+
+    if (opt.kind === "color") {
+      const selected = String(rawRecord[opt.key] ?? "");
+      const displayKey = hoveredColor[opt.key] ?? selected;
+      const displayHex =
+        displayKey === "original"
+          ? "Original"
+          : `${displayKey} (${getBrandHex(displayKey as BrandColorKey)})`;
+
+      return (
+        <fieldset key={opt.key} className="space-y-1.5">
+          <legend className="text-[13px] font-semibold text-cocoa-900">
+            {opt.label}
+          </legend>
+          <div className="flex flex-wrap gap-0.5">
+            {opt.allowOriginal && (
+              <button
+                type="button"
+                aria-label="Original brand colours"
+                title="original"
+                aria-pressed={selected === "original"}
+                onClick={() => setField(opt.key, "original" as LogoColorKey)}
+                onMouseEnter={() =>
+                  setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
+                }
+                onMouseLeave={() =>
+                  setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                }
+                onFocus={() =>
+                  setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
+                }
+                onBlur={() =>
+                  setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                }
+                className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-blush-700"
+              >
+                <span
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #452104 50%, #9A4F45 50%)",
+                  }}
+                  className={cn(
+                    "size-7 rounded-full border border-sand-300 block",
+                    selected === "original" &&
+                      "ring-2 ring-cocoa-900 ring-offset-2 ring-offset-cream-50"
+                  )}
+                />
+              </button>
+            )}
+            {brandColors.map((c) => {
+              const isSelected = selected === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  aria-label={`${c.key} ${c.hex}`}
+                  title={c.key}
+                  aria-pressed={isSelected}
+                  onClick={() => setField(opt.key, c.key)}
+                  onMouseEnter={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: c.key }))
+                  }
+                  onMouseLeave={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  onFocus={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: c.key }))
+                  }
+                  onBlur={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-blush-700"
+                >
+                  <span
+                    style={{ backgroundColor: c.hex }}
+                    className={cn(
+                      "size-7 rounded-full border border-cocoa-900/15 block",
+                      isSelected &&
+                        "ring-2 ring-cocoa-900 ring-offset-2 ring-offset-cream-50"
+                    )}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] font-medium text-cocoa-700">{displayHex}</p>
+        </fieldset>
       );
     }
 
@@ -292,7 +521,7 @@ export function CustomizerPanel() {
           <div className="grid grid-cols-2 gap-1.5">
             {opt.choices.map((c) => {
               const checked = Boolean(
-                config.controls[c.value as keyof HeroConfig["controls"]]
+                heroConfig.controls[c.value as keyof HeroConfig["controls"]]
               );
               return (
                 <label
@@ -304,9 +533,9 @@ export function CustomizerPanel() {
                     checked={checked}
                     onChange={(e) =>
                       updateConfig("home-hero", {
-                        ...config,
+                        ...heroConfig,
                         controls: {
-                          ...config.controls,
+                          ...heroConfig.controls,
                           [c.value]: e.target.checked,
                         },
                       })
@@ -325,7 +554,11 @@ export function CustomizerPanel() {
     return null;
   };
 
-  const enabledCount = config.slides.filter((s) => s.enabled).length;
+  const enabledCount = heroConfig.slides.filter((s) => s.enabled).length;
+  const activeSectionObj =
+    customizerSections.find((s) => s.id === activeSection) ?? homeHeroSection;
+  const activeGroups =
+    activeSection === "home-hero" ? HERO_GROUPS : HEADER_GROUPS;
 
   return (
     <>
@@ -355,36 +588,68 @@ export function CustomizerPanel() {
           aria-label="Section Customizer"
           className="fixed inset-y-0 left-0 z-50 w-full sm:w-[380px] bg-cream-50 text-cocoa-900 border-r border-sand-300 shadow-2xl flex flex-col font-body text-[14px]"
         >
-          {/* Header */}
-          <div className="h-14 px-4 border-b border-sand-300 flex items-center justify-between shrink-0 bg-sand-100">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-cocoa-700">
-                Section Customizer
-              </p>
-              <h2 className="font-heading text-lg font-medium text-cocoa-900 leading-tight">
-                {homeHeroSection.title}
-              </h2>
+          {/* Header + Section Switcher */}
+          <div className="px-4 py-3 border-b border-sand-300 bg-sand-100 space-y-2.5 shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-cocoa-700">
+                  Section Customizer
+                </p>
+                <h2 className="font-heading text-lg font-medium text-cocoa-900 leading-tight">
+                  {activeSectionObj.title}
+                </h2>
+              </div>
+
+              <button
+                ref={closeBtnRef}
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  triggerRef.current?.focus();
+                }}
+                aria-label="Close customizer"
+                className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+              >
+                <X size={20} strokeWidth={1.5} />
+              </button>
             </div>
 
-            <button
-              ref={closeBtnRef}
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                triggerRef.current?.focus();
-              }}
-              aria-label="Close customizer"
-              className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            <div
+              role="tablist"
+              aria-label="Customize section"
+              className="grid grid-cols-2 gap-1 p-1 rounded-pill bg-cream-50 border border-sand-300"
             >
-              <X size={20} strokeWidth={1.5} />
-            </button>
+              {customizerSections.map((sec) => {
+                const selected = sec.id === activeSection;
+                return (
+                  <button
+                    key={sec.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => {
+                      setActiveSection(sec.id);
+                      setConfirmReset(false);
+                    }}
+                    className={cn(
+                      "min-h-[36px] px-3 rounded-pill text-[12px] font-semibold transition-colors",
+                      selected
+                        ? "bg-cocoa-900 text-cream-50"
+                        : "text-cocoa-700 hover:text-cocoa-900"
+                    )}
+                  >
+                    {sec.title}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Scrollable Groups */}
           <div className="flex-1 overflow-y-auto divide-y divide-sand-300">
-            {GROUPS.map((group) => {
+            {activeGroups.map((group) => {
               const isGroupOpen = !!openGroups[group];
-              const groupOptions = homeHeroSection.options.filter(
+              const groupOptions = activeSectionObj.options.filter(
                 (o) => o.group === group
               );
 
@@ -416,9 +681,9 @@ export function CustomizerPanel() {
                     <div className="pb-4 pt-2 space-y-4">
                       {groupOptions.map((opt) => renderOption(opt))}
 
-                      {group === "Slides" && (
+                      {activeSection === "home-hero" && group === "Slides" && (
                         <div className="space-y-3">
-                          {config.slides.map((slide, idx) => (
+                          {heroConfig.slides.map((slide, idx) => (
                             <div
                               key={slide.id}
                               className="p-3 rounded-[12px] bg-sand-100 border border-sand-300 space-y-2.5"
@@ -455,7 +720,9 @@ export function CustomizerPanel() {
                                   <button
                                     type="button"
                                     onClick={() => moveSlide(idx, 1)}
-                                    disabled={idx === config.slides.length - 1}
+                                    disabled={
+                                      idx === heroConfig.slides.length - 1
+                                    }
                                     aria-label={`Move ${slide.title} down`}
                                     className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 disabled:opacity-30"
                                   >
@@ -604,6 +871,179 @@ export function CustomizerPanel() {
                           ))}
                         </div>
                       )}
+                      {activeSection === "site-header" && group === "Top bar" && (
+                        <div className="space-y-3 pt-1">
+                          <ContrastBadge
+                            label="Top bar text contrast"
+                            fgHex={getBrandHex(headerConfig.topBarText)}
+                            bgHex={getBrandHex(headerConfig.topBarBg)}
+                            minRatio={4.5}
+                          />
+                          <div className="space-y-1.5">
+                            <p className="text-[13px] font-semibold text-cocoa-900">
+                              Messages (in order)
+                            </p>
+                            {headerConfig.topBarMessages.map((msg, idx) => {
+                              const labelText =
+                                siteConfig.topBarMessages[msg.id] ?? "";
+                              return (
+                                <div
+                                  key={msg.id}
+                                  className="px-2.5 py-1.5 rounded-[10px] bg-sand-100 border border-sand-300 flex items-center justify-between gap-2"
+                                >
+                                  <label className="min-h-[40px] flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={msg.enabled}
+                                      onChange={(e) =>
+                                        updateTopBarMsg(idx, {
+                                          enabled: e.target.checked,
+                                        })
+                                      }
+                                      className="size-4 accent-cocoa-900 shrink-0 cursor-pointer"
+                                    />
+                                    <span className="text-[12px] text-cocoa-900 truncate">
+                                      {labelText}
+                                    </span>
+                                  </label>
+                                  <div className="flex items-center shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => moveTopBarMsg(idx, -1)}
+                                      disabled={idx === 0}
+                                      aria-label={`Move message ${idx + 1} up`}
+                                      className="size-9 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 disabled:opacity-30"
+                                    >
+                                      <ArrowUp size={14} strokeWidth={1.5} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => moveTopBarMsg(idx, 1)}
+                                      disabled={
+                                        idx ===
+                                        headerConfig.topBarMessages.length - 1
+                                      }
+                                      aria-label={`Move message ${idx + 1} down`}
+                                      className="size-9 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 disabled:opacity-30"
+                                    >
+                                      <ArrowDown size={14} strokeWidth={1.5} />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeSection === "site-header" && group === "Logo" && (
+                        <div className="space-y-3 pt-1">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div
+                              style={{
+                                backgroundColor: getBrandHex(
+                                  headerConfig.headerBg
+                                ),
+                              }}
+                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px]"
+                            >
+                              <BrandLogo
+                                variant={headerConfig.logoVariant}
+                                color={headerConfig.logoColor}
+                                heightMobile={28}
+                                heightDesktop={28}
+                                asPreview
+                              />
+                              <span
+                                style={{
+                                  color: getBrandHex(headerConfig.iconColor),
+                                }}
+                                className="text-[10px] font-medium"
+                              >
+                                On header
+                              </span>
+                            </div>
+                            <div
+                              style={{ backgroundColor: "#452104" }}
+                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px]"
+                            >
+                              <BrandLogo
+                                variant={headerConfig.logoVariant}
+                                color={headerConfig.logoColorOverHero}
+                                heightMobile={28}
+                                heightDesktop={28}
+                                asPreview
+                              />
+                              <span
+                                style={{
+                                  color: getBrandHex(
+                                    headerConfig.iconColorOverHero
+                                  ),
+                                }}
+                                className="text-[10px] font-medium"
+                              >
+                                Over hero
+                              </span>
+                            </div>
+                          </div>
+                          <ContrastBadge
+                            label="Logo contrast on header"
+                            fgHex={
+                              headerConfig.logoColor === "original"
+                                ? "#452104"
+                                : getBrandHex(headerConfig.logoColor)
+                            }
+                            bgHex={getBrandHex(headerConfig.headerBg)}
+                            minRatio={3}
+                          />
+                        </div>
+                      )}
+
+                      {activeSection === "site-header" &&
+                        group === "Header bar" && (
+                          <ContrastBadge
+                            label="Icon contrast on header"
+                            fgHex={getBrandHex(headerConfig.iconColor)}
+                            bgHex={getBrandHex(headerConfig.headerBg)}
+                            minRatio={3}
+                          />
+                        )}
+
+                      {activeSection === "site-header" &&
+                        group === "Over the hero" && (
+                          <div className="space-y-2">
+                            <ContrastBadge
+                              label="Logo over hero"
+                              note="approximate, photo-dependent"
+                              fgHex={
+                                headerConfig.logoColorOverHero === "original"
+                                  ? "#452104"
+                                  : getBrandHex(headerConfig.logoColorOverHero)
+                              }
+                              bgHex="#452104"
+                              minRatio={3}
+                            />
+                            <ContrastBadge
+                              label="Icons over hero"
+                              note="approximate, photo-dependent"
+                              fgHex={getBrandHex(
+                                headerConfig.iconColorOverHero
+                              )}
+                              bgHex="#452104"
+                              minRatio={3}
+                            />
+                          </div>
+                        )}
+
+                      {activeSection === "site-header" &&
+                        group === "Drawer" && (
+                          <ContrastBadge
+                            label="Highlight link contrast"
+                            fgHex={getBrandHex(headerConfig.highlightColor)}
+                            bgHex={getBrandHex(headerConfig.drawerBg)}
+                            minRatio={4.5}
+                          />
+                        )}
                     </div>
                   )}
                 </div>
@@ -615,13 +1055,16 @@ export function CustomizerPanel() {
           {confirmReset && (
             <div className="px-4 py-3 bg-blush-100 border-t border-sand-300 flex items-center justify-between gap-2 shrink-0">
               <span className="text-[13px] font-medium text-cocoa-900">
-                Reset all hero settings?
+                Reset{" "}
+                {activeSection === "home-hero"
+                  ? "all hero settings?"
+                  : "all header settings?"}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    resetConfig("home-hero");
+                    resetConfig(activeSection);
                     setConfirmReset(false);
                   }}
                   className="min-h-[36px] px-3 rounded-pill bg-cocoa-900 text-cream-50 text-xs font-semibold"
@@ -641,6 +1084,35 @@ export function CustomizerPanel() {
 
           {/* Footer Actions */}
           <div className="p-3 border-t border-sand-300 bg-sand-100 space-y-2 shrink-0">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-cocoa-700 px-1">
+              <span>Copy scope:</span>
+              <div className="inline-flex rounded-pill bg-cream-50 border border-sand-300 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setCopyScope("section")}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-pill transition-colors",
+                    copyScope === "section"
+                      ? "bg-cocoa-900 text-cream-50"
+                      : "text-cocoa-700"
+                  )}
+                >
+                  This section
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCopyScope("all")}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-pill transition-colors",
+                    copyScope === "all"
+                      ? "bg-cocoa-900 text-cream-50"
+                      : "text-cocoa-700"
+                  )}
+                >
+                  All sections
+                </button>
+              </div>
+            </div>
             {copiedMsg && (
               <p
                 role="status"

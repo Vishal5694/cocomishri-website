@@ -4,12 +4,15 @@ import * as React from "react";
 import { Globe, Check } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
+import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { getBrandHex } from "@/lib/brand-colors";
 
 interface CountrySelectorProps {
   transparent?: boolean;
 }
 
 export function CountrySelector({ transparent = false }: CountrySelectorProps) {
+  const cfg = useSectionConfig("site-header");
   const [isOpen, setIsOpen] = React.useState(false);
   const [showGlobalNote, setShowGlobalNote] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -44,6 +47,14 @@ export function CountrySelector({ transparent = false }: CountrySelectorProps) {
     };
   }, [isOpen]);
 
+  if (!cfg.countryOn) {
+    return null;
+  }
+
+  const colorHex = transparent
+    ? getBrandHex(cfg.iconColorOverHero)
+    : getBrandHex(cfg.iconColor);
+
   return (
     <div ref={containerRef} className="relative hidden lg:flex items-center">
       <button
@@ -55,17 +66,25 @@ export function CountrySelector({ transparent = false }: CountrySelectorProps) {
         }}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        aria-label={
+          cfg.countryStyle === "globe-only"
+            ? `Select country (${siteConfig.countries.current})`
+            : undefined
+        }
+        style={{ color: colorHex }}
         className={cn(
           "min-h-[44px] px-2.5 inline-flex items-center gap-1.5 rounded-pill text-sm font-medium transition-colors duration-300 ease-soft motion-reduce:transition-none",
           transparent
-            ? "text-cream-50 hover:bg-cream-50/15 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
-            : "text-cocoa-900 hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            ? "hover:bg-cream-50/15 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
+            : "hover:bg-sand-100 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
         )}
       >
         <Globe size={18} strokeWidth={1.5} />
-        <span className="underline underline-offset-4">
-          {siteConfig.countries.current}
-        </span>
+        {cfg.countryStyle === "globe+text" && (
+          <span className="underline underline-offset-4">
+            {siteConfig.countries.current}
+          </span>
+        )}
       </button>
 
       {isOpen && (

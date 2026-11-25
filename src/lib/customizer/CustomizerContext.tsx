@@ -4,27 +4,31 @@ import * as React from "react";
 import {
   customizerSections,
   homeHeroSection,
+  siteHeaderSection,
   type SectionId,
 } from "./registry";
 import { DEFAULT_HERO_CONFIG, type HeroConfig } from "@/lib/hero-config";
+import { DEFAULT_HEADER_CONFIG, type HeaderConfig } from "@/lib/header-config";
 
 const STORAGE_KEY = "cm_customizer_v1";
 
 export const isCustomizerEnabled =
   process.env.NEXT_PUBLIC_ENABLE_CUSTOMIZER === "true";
 
-type ConfigMap = {
+export type ConfigMap = {
   "home-hero": HeroConfig;
+  "site-header": HeaderConfig;
 };
 
 interface CustomizerContextValue {
   configs: ConfigMap;
-  updateConfig: (sectionId: SectionId, next: HeroConfig) => void;
+  updateConfig: <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => void;
   resetConfig: (sectionId: SectionId) => void;
 }
 
 const DEFAULT_MAP: ConfigMap = {
   "home-hero": DEFAULT_HERO_CONFIG,
+  "site-header": DEFAULT_HEADER_CONFIG,
 };
 
 const CustomizerContext = React.createContext<CustomizerContextValue>({
@@ -81,9 +85,24 @@ export function CustomizerProvider({
       );
       try {
         const decoded = decodeBase64Utf8(decodeURIComponent(payload));
-        const parsed = JSON.parse(decoded);
-        const validated = homeHeroSection.validate(parsed);
-        const nextMap: ConfigMap = { "home-hero": validated };
+        const parsed = JSON.parse(decoded) as Record<string, unknown>;
+        const nextMap: ConfigMap = { ...DEFAULT_MAP };
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          ("home-hero" in parsed || "site-header" in parsed)
+        ) {
+          if ("home-hero" in parsed) {
+            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
+          }
+          if ("site-header" in parsed) {
+            nextMap["site-header"] = siteHeaderSection.validate(
+              parsed["site-header"]
+            );
+          }
+        } else {
+          nextMap["home-hero"] = homeHeroSection.validate(parsed);
+        }
         setConfigs(nextMap);
         persist(nextMap);
         return;
@@ -98,9 +117,14 @@ export function CustomizerProvider({
       if (raw) {
         const parsed = JSON.parse(raw) as Record<string, unknown>;
         const nextMap: ConfigMap = { ...DEFAULT_MAP };
-        for (const sec of customizerSections) {
-          if (parsed && typeof parsed === "object" && sec.id in parsed) {
-            nextMap[sec.id] = sec.validate(parsed[sec.id]);
+        if (parsed && typeof parsed === "object") {
+          if ("home-hero" in parsed) {
+            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
+          }
+          if ("site-header" in parsed) {
+            nextMap["site-header"] = siteHeaderSection.validate(
+              parsed["site-header"]
+            );
           }
         }
         setConfigs(nextMap);
@@ -123,9 +147,14 @@ export function CustomizerProvider({
       try {
         const parsed = JSON.parse(e.newValue) as Record<string, unknown>;
         const nextMap: ConfigMap = { ...DEFAULT_MAP };
-        for (const sec of customizerSections) {
-          if (parsed && typeof parsed === "object" && sec.id in parsed) {
-            nextMap[sec.id] = sec.validate(parsed[sec.id]);
+        if (parsed && typeof parsed === "object") {
+          if ("home-hero" in parsed) {
+            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
+          }
+          if ("site-header" in parsed) {
+            nextMap["site-header"] = siteHeaderSection.validate(
+              parsed["site-header"]
+            );
           }
         }
         setConfigs(nextMap);
@@ -139,9 +168,12 @@ export function CustomizerProvider({
   }, []);
 
   const updateConfig = React.useCallback(
-    (sectionId: SectionId, next: HeroConfig) => {
+    <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => {
       if (!isCustomizerEnabled) return;
-      const validated = homeHeroSection.validate(next);
+      const validated =
+        sectionId === "home-hero"
+          ? (homeHeroSection.validate(next) as ConfigMap[K])
+          : (siteHeaderSection.validate(next) as ConfigMap[K]);
       setConfigs((prev) => {
         const nextMap = { ...prev, [sectionId]: validated };
         persist(nextMap);
@@ -155,7 +187,7 @@ export function CustomizerProvider({
     (sectionId: SectionId) => {
       if (!isCustomizerEnabled) return;
       setConfigs((prev) => {
-        const nextMap = { ...prev, [sectionId]: DEFAULT_HERO_CONFIG };
+        const nextMap = { ...prev, [sectionId]: DEFAULT_MAP[sectionId] };
         persist(nextMap);
         return nextMap;
       });
@@ -170,12 +202,14 @@ export function CustomizerProvider({
   );
 }
 
-export function useSectionConfig(sectionId: SectionId): HeroConfig {
+export function useSectionConfig<K extends SectionId>(
+  sectionId: K
+): ConfigMap[K] {
   const ctx = React.useContext(CustomizerContext);
   if (!isCustomizerEnabled) {
-    return DEFAULT_HERO_CONFIG;
+    return DEFAULT_MAP[sectionId];
   }
-  return ctx.configs[sectionId] ?? DEFAULT_HERO_CONFIG;
+  return ctx.configs[sectionId] ?? DEFAULT_MAP[sectionId];
 }
 
 export function useCustomizer() {
