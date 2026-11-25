@@ -260,6 +260,42 @@ export const images = {
     shot: "Tender parent-baby moment, landscape, space for centred text",
     ratio: "16/9",
   },
+  // (Home hero slideshow)
+  "hero-baby-toddler": {
+    src: "",
+    sampleSrc: u("1765010608917-23001bd2415c"),
+    alt: "A mother holding her baby",
+    shot: "Baby and toddler lifestyle, landscape",
+    ratio: "16/9",
+  },
+  "hero-girls": {
+    src: "",
+    sampleSrc: u("1599624427857-461fd60c23e5"),
+    alt: "A young girl wearing a dress",
+    shot: "Girls collection lifestyle, landscape",
+    ratio: "16/9",
+  },
+  "hero-boys": {
+    src: "",
+    sampleSrc: u("1597294150753-b6e790b68d1c"),
+    alt: "A young boy smiling outdoors",
+    shot: "Boys collection lifestyle, landscape",
+    ratio: "16/9",
+  },
+  "hero-gifting": {
+    src: "",
+    sampleSrc: u("1751450236048-aa1981f7bc2d"),
+    alt: "A neatly folded outfit with a handwritten card",
+    shot: "Gifting flat lay, landscape",
+    ratio: "16/9",
+  },
+  "hero-everyday": {
+    src: "",
+    sampleSrc: u("1610674632272-2d3e9a345453"),
+    alt: "A child playing comfortably at home",
+    shot: "Everyday comfort, landscape",
+    ratio: "16/9",
+  },
 } as const satisfies Record<string, ImageEntry>;
 
 export type ImageKey = keyof typeof images;

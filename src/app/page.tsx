@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Truck, Eye, RotateCcw, Feather } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandImage } from "@/components/ui/BrandImage";
-import { HeroImage } from "@/components/home/HeroImage";
+import { HeroSlideshow } from "@/components/home/HeroSlideshow";
 import { Carousel } from "@/components/ui/Carousel";
 import { Section } from "@/components/ui/Section";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -66,30 +66,8 @@ const instagramKeys: ImageKey[] = [
 export default function HomePage() {
   return (
     <div className="flex flex-col w-full overflow-x-hidden">
-      {/* 2.1 Hero (full width, no container, exactly ONE h1) */}
-      <Section noContainer bg="transparent" className="relative w-full">
-        <div data-transparent-header>
-          <HeroImage />
-        </div>
-
-        {/* Single Text Card: aligned with Container x-start on desktop, overlapping by 32px on mobile */}
-        <div className="-mt-8 mx-4 lg:mt-0 lg:mx-0 lg:absolute lg:bottom-12 lg:left-[max(2rem,calc((100vw-72rem)/2+2rem))] z-10 bg-cream-50 rounded-card p-4 sm:p-8 lg:p-10 max-w-[520px] lg:max-w-[580px] shadow-lg relative">
-          <h1 className="leading-tight font-heading font-medium text-cocoa-900">
-            A Little World Called Cocomishri
-          </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-cocoa-700 mt-2 sm:mt-3 lg:mt-4 leading-relaxed">
-            Because childhood deserves its own little magic.
-          </p>
-          <div className="flex flex-wrap items-center gap-3 mt-3 sm:mt-6 lg:mt-8">
-            <Link href="/shop">
-              <Button variant="primary">Shop the collection</Button>
-            </Link>
-            <Link href="/our-story">
-              <Button variant="secondary">Read our story</Button>
-            </Link>
-          </div>
-        </div>
-      </Section>
+      {/* 2.1 Hero (full-screen slideshow, exactly ONE sr-only h1) */}
+      <HeroSlideshow />
 
       {/* 2.2 New in — product carousel (bg cream-50) */}
       <Section bg="cream-50">
