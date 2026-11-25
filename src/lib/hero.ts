@@ -29,7 +29,7 @@ export const heroSlides: HeroSlide[] = [
     title: "Boys",
     href: "/collections/boys",
     imageKey: "hero-boys",
-    focus: "75% 30%",
+    focus: "50% 20%",
   },
   {
     id: "gifting",
@@ -43,6 +43,6 @@ export const heroSlides: HeroSlide[] = [
     title: "Everyday comfort",
     href: "/collections/everyday-comfort",
     imageKey: "hero-everyday",
-    focus: "50% 35%",
+    focus: "50% 68%",
   },
 ];

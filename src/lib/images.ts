@@ -277,8 +277,8 @@ export const images = {
   },
   "hero-boys": {
     src: "",
-    sampleSrc: u("1597294150753-b6e790b68d1c"),
-    alt: "A young boy smiling outdoors",
+    sampleSrc: u("1610674632272-2d3e9a345453"),
+    alt: "A boy in a red top playing indoors",
     shot: "Boys collection lifestyle, landscape",
     ratio: "16/9",
   },
@@ -291,8 +291,8 @@ export const images = {
   },
   "hero-everyday": {
     src: "",
-    sampleSrc: u("1610674632272-2d3e9a345453"),
-    alt: "A child playing comfortably at home",
+    sampleSrc: u("1795151943972-395447a66568"),
+    alt: "A toddler crawling in a soft patterned dress",
     shot: "Everyday comfort, landscape",
     ratio: "16/9",
   },
