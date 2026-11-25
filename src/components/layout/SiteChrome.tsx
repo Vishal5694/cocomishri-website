@@ -1,12 +1,27 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { TopBar } from "@/components/header/TopBar";
 import { SiteHeader } from "@/components/header/SiteHeader";
 import { FooterV2 } from "@/components/v2/FooterV2";
 import { WhatsAppButton } from "./WhatsAppButton";
+import {
+  CustomizerProvider,
+  isCustomizerEnabled,
+} from "@/lib/customizer/CustomizerContext";
 import { cn } from "@/lib/utils";
+
+const CustomizerPanel = isCustomizerEnabled
+  ? dynamic(
+      () =>
+        import("@/components/customizer/CustomizerPanel").then(
+          (m) => m.CustomizerPanel
+        ),
+      { ssr: false }
+    )
+  : null;
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "";
@@ -17,7 +32,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       : pathname;
   const isTransparentHeroRoute = normalized === "/" || normalized === "/v2";
 
-  return (
+  const content = (
     <>
       <TopBar />
       <SiteHeader />
@@ -32,6 +47,13 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       </main>
       <FooterV2 />
       <WhatsAppButton />
+      {CustomizerPanel ? <CustomizerPanel /> : null}
     </>
   );
+
+  if (isCustomizerEnabled) {
+    return <CustomizerProvider>{content}</CustomizerProvider>;
+  }
+
+  return content;
 }
