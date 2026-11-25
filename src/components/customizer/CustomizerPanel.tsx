@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Share2,
   Copy,
+  ShoppingBag,
 } from "lucide-react";
 import {
   homeHeroSection,
@@ -58,9 +59,15 @@ const HEADER_GROUPS: OptionGroup[] = [
 ];
 
 function formatColorValue(val: string): string {
-  if (val === "original") return "original";
+  if (val === "original" || val === "original-light") return val;
   const found = brandColors.find((c) => c.key === val);
   return found ? `${found.key} ${found.hex}` : val;
+}
+
+function logoContrastHex(color: LogoColorKey): string {
+  if (color === "original") return "#452104";
+  if (color === "original-light") return "#FCF8F2";
+  return getBrandHex(color);
 }
 
 function buildHeroSummary(config: HeroConfig): string {
@@ -188,6 +195,23 @@ export function CustomizerPanel() {
   const [hoveredColor, setHoveredColor] = React.useState<
     Record<string, string | null>
   >({});
+  const [highlightedOption, setHighlightedOption] = React.useState<
+    string | null
+  >(null);
+  const highlightTimerRef = React.useRef<number | null>(null);
+
+  const focusOption = (key: string) => {
+    const el = document.getElementById(`cm-opt-${key}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedOption(key);
+    if (highlightTimerRef.current !== null) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedOption(null);
+      highlightTimerRef.current = null;
+    }, 1500);
+  };
   const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
     Layout: true,
     Slides: true,
@@ -424,52 +448,112 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "color") {
+      if (
+        activeSection === "site-header" &&
+        opt.key === "logoColorOverHero" &&
+        headerConfig.sameLogoColor
+      ) {
+        return null;
+      }
+
       const selected = String(rawRecord[opt.key] ?? "");
       const displayKey = hoveredColor[opt.key] ?? selected;
       const displayHex =
         displayKey === "original"
           ? "Original"
+          : displayKey === "original-light"
+          ? "Original – light"
           : `${displayKey} (${getBrandHex(displayKey as BrandColorKey)})`;
 
       return (
-        <fieldset key={opt.key} className="space-y-1.5">
+        <fieldset
+          key={opt.key}
+          id={`cm-opt-${opt.key}`}
+          className={cn(
+            "space-y-1.5 rounded-[10px] transition-all duration-300",
+            highlightedOption === opt.key &&
+              "ring-2 ring-blush-700 bg-blush-100/40 p-2 -mx-2"
+          )}
+        >
           <legend className="text-[13px] font-semibold text-cocoa-900">
             {opt.label}
           </legend>
           <div className="flex flex-wrap gap-0.5">
             {opt.allowOriginal && (
-              <button
-                type="button"
-                aria-label="Original brand colours"
-                title="original"
-                aria-pressed={selected === "original"}
-                onClick={() => setField(opt.key, "original" as LogoColorKey)}
-                onMouseEnter={() =>
-                  setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
-                }
-                onMouseLeave={() =>
-                  setHoveredColor((p) => ({ ...p, [opt.key]: null }))
-                }
-                onFocus={() =>
-                  setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
-                }
-                onBlur={() =>
-                  setHoveredColor((p) => ({ ...p, [opt.key]: null }))
-                }
-                className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-blush-700"
-              >
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #452104 50%, #9A4F45 50%)",
-                  }}
-                  className={cn(
-                    "size-7 rounded-full border border-sand-300 block",
-                    selected === "original" &&
-                      "ring-2 ring-cocoa-900 ring-offset-2 ring-offset-cream-50"
-                  )}
-                />
-              </button>
+              <>
+                <button
+                  type="button"
+                  aria-label="Original brand colours"
+                  title="Original"
+                  aria-pressed={selected === "original"}
+                  onClick={() => setField(opt.key, "original" as LogoColorKey)}
+                  onMouseEnter={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
+                  }
+                  onMouseLeave={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  onFocus={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: "original" }))
+                  }
+                  onBlur={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-blush-700"
+                >
+                  <span
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #452104 50%, #9A4F45 50%)",
+                    }}
+                    className={cn(
+                      "size-7 rounded-full border border-sand-300 block",
+                      selected === "original" &&
+                        "ring-2 ring-cocoa-900 ring-offset-2 ring-offset-cream-50"
+                    )}
+                  />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Original – light"
+                  title="Original – light"
+                  aria-pressed={selected === "original-light"}
+                  onClick={() =>
+                    setField(opt.key, "original-light" as LogoColorKey)
+                  }
+                  onMouseEnter={() =>
+                    setHoveredColor((p) => ({
+                      ...p,
+                      [opt.key]: "original-light",
+                    }))
+                  }
+                  onMouseLeave={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  onFocus={() =>
+                    setHoveredColor((p) => ({
+                      ...p,
+                      [opt.key]: "original-light",
+                    }))
+                  }
+                  onBlur={() =>
+                    setHoveredColor((p) => ({ ...p, [opt.key]: null }))
+                  }
+                  className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-blush-700"
+                >
+                  <span
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #FCF8F2 50%, #D27821 50%)",
+                    }}
+                    className={cn(
+                      "size-7 rounded-full border border-cocoa-900/20 block",
+                      selected === "original-light" &&
+                        "ring-2 ring-cocoa-900 ring-offset-2 ring-offset-cream-50"
+                    )}
+                  />
+                </button>
+              </>
             )}
             {brandColors.map((c) => {
               const isSelected = selected === c.key;
@@ -938,14 +1022,20 @@ export function CustomizerPanel() {
 
                       {activeSection === "site-header" && group === "Logo" && (
                         <div className="space-y-3 pt-1">
+                          <p className="text-[12px] text-cocoa-700 leading-snug">
+                            The home page starts over the hero photo. Scroll
+                            down to see the cream-header colour.
+                          </p>
                           <div className="grid grid-cols-2 gap-2">
-                            <div
+                            <button
+                              type="button"
+                              onClick={() => focusOption("logoColor")}
                               style={{
                                 backgroundColor: getBrandHex(
                                   headerConfig.headerBg
                                 ),
                               }}
-                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px]"
+                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px] hover:ring-2 hover:ring-blush-700 transition-shadow cursor-pointer"
                             >
                               <BrandLogo
                                 variant={headerConfig.logoVariant}
@@ -962,14 +1052,26 @@ export function CustomizerPanel() {
                               >
                                 On header
                               </span>
-                            </div>
-                            <div
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                focusOption(
+                                  headerConfig.sameLogoColor
+                                    ? "logoColor"
+                                    : "logoColorOverHero"
+                                )
+                              }
                               style={{ backgroundColor: "#452104" }}
-                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px]"
+                              className="p-3 rounded-[10px] border border-sand-300 flex flex-col items-center justify-center gap-1.5 min-h-[68px] hover:ring-2 hover:ring-blush-700 transition-shadow cursor-pointer"
                             >
                               <BrandLogo
                                 variant={headerConfig.logoVariant}
-                                color={headerConfig.logoColorOverHero}
+                                color={
+                                  headerConfig.sameLogoColor
+                                    ? headerConfig.logoColor
+                                    : headerConfig.logoColorOverHero
+                                }
                                 heightMobile={28}
                                 heightDesktop={28}
                                 asPreview
@@ -984,16 +1086,23 @@ export function CustomizerPanel() {
                               >
                                 Over hero
                               </span>
-                            </div>
+                            </button>
                           </div>
                           <ContrastBadge
                             label="Logo contrast on header"
-                            fgHex={
-                              headerConfig.logoColor === "original"
-                                ? "#452104"
-                                : getBrandHex(headerConfig.logoColor)
-                            }
+                            fgHex={logoContrastHex(headerConfig.logoColor)}
                             bgHex={getBrandHex(headerConfig.headerBg)}
+                            minRatio={3}
+                          />
+                          <ContrastBadge
+                            label="Logo over hero"
+                            note="approximate, photo-dependent"
+                            fgHex={logoContrastHex(
+                              headerConfig.sameLogoColor
+                                ? headerConfig.logoColor
+                                : headerConfig.logoColorOverHero
+                            )}
+                            bgHex="#452104"
                             minRatio={3}
                           />
                         </div>
@@ -1011,27 +1120,42 @@ export function CustomizerPanel() {
 
                       {activeSection === "site-header" &&
                         group === "Over the hero" && (
-                          <div className="space-y-2">
-                            <ContrastBadge
-                              label="Logo over hero"
-                              note="approximate, photo-dependent"
-                              fgHex={
-                                headerConfig.logoColorOverHero === "original"
-                                  ? "#452104"
-                                  : getBrandHex(headerConfig.logoColorOverHero)
-                              }
-                              bgHex="#452104"
-                              minRatio={3}
-                            />
-                            <ContrastBadge
-                              label="Icons over hero"
-                              note="approximate, photo-dependent"
-                              fgHex={getBrandHex(
-                                headerConfig.iconColorOverHero
-                              )}
-                              bgHex="#452104"
-                              minRatio={3}
-                            />
+                          <ContrastBadge
+                            label="Icons over hero"
+                            note="approximate, photo-dependent"
+                            fgHex={getBrandHex(headerConfig.iconColorOverHero)}
+                            bgHex="#452104"
+                            minRatio={3}
+                          />
+                        )}
+
+                      {activeSection === "site-header" &&
+                        group === "Right side" && (
+                          <div className="flex items-center justify-between px-3 py-2 rounded-[10px] bg-sand-100 border border-sand-300 text-[12px]">
+                            <span className="font-medium text-cocoa-900">
+                              Bag badge preview
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: getBrandHex(
+                                  headerConfig.headerBg
+                                ),
+                                color: getBrandHex(headerConfig.iconColor),
+                              }}
+                              className="relative size-10 rounded-pill border border-sand-300 inline-flex items-center justify-center"
+                            >
+                              <ShoppingBag size={20} strokeWidth={1.5} />
+                              <span
+                                style={{
+                                  backgroundColor: getBrandHex(
+                                    headerConfig.bagBadgeColor
+                                  ),
+                                }}
+                                className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-pill text-cream-50 text-[10px] font-bold flex items-center justify-center leading-none"
+                              >
+                                2
+                              </span>
+                            </span>
                           </div>
                         )}
 

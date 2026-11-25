@@ -30,6 +30,7 @@ export interface HeaderConfig {
 
   // Logo
   logoVariant: LogoVariant;
+  sameLogoColor: boolean;
   logoColor: LogoColorKey;
   logoColorOverHero: LogoColorKey;
   logoHeightDesktop: number;
@@ -87,6 +88,7 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
 
   // Logo
   logoVariant: "wordmark",
+  sameLogoColor: false,
   logoColor: "original",
   logoColorOverHero: "cream-50",
   logoHeightDesktop: 40,
@@ -158,7 +160,7 @@ function pickColor(val: unknown, fallback: BrandColorKey): BrandColorKey {
 }
 
 function pickLogoColor(val: unknown, fallback: LogoColorKey): LogoColorKey {
-  if (val === "original") return "original";
+  if (val === "original" || val === "original-light") return val;
   return isBrandColorKey(val) ? val : fallback;
 }
 
@@ -219,6 +221,7 @@ export function validateHeaderConfig(raw: unknown): HeaderConfig {
       ["wordmark", "full", "mascot", "mascot-left"] as const,
       def.logoVariant
     ),
+    sameLogoColor: pickBool(obj.sameLogoColor, def.sameLogoColor),
     logoColor: pickLogoColor(obj.logoColor, def.logoColor),
     logoColorOverHero: pickLogoColor(
       obj.logoColorOverHero,

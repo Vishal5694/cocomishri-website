@@ -93,11 +93,15 @@ export function SiteHeader() {
   const activeIconColor = isTransparent
     ? getBrandHex(cfg.iconColorOverHero)
     : getBrandHex(cfg.iconColor);
-  const activeLogoColor = isTransparent ? cfg.logoColorOverHero : cfg.logoColor;
+  const activeLogoColor = isTransparent
+    ? cfg.sameLogoColor
+      ? cfg.logoColor
+      : cfg.logoColorOverHero
+    : cfg.logoColor;
   const showLabels = cfg.iconLabels === "icons+labels";
 
   const iconBtnClass = cn(
-    "relative flex items-center justify-center rounded-pill transition-colors duration-300 ease-soft motion-reduce:transition-none shrink-0",
+    "relative flex items-center justify-center rounded-pill text-inherit transition-colors duration-300 ease-soft motion-reduce:transition-none shrink-0",
     showLabels ? "flex-col gap-0.5 min-w-[44px] h-11 px-1.5" : "size-11",
     isTransparent
       ? "hover:bg-cream-50/15 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
@@ -171,22 +175,17 @@ export function SiteHeader() {
   );
 
   const logoElement = (
-    <Link
-      href="/"
-      className={cn(
-        "flex items-center min-h-[44px]",
+    <BrandLogo
+      variant={cfg.logoVariant}
+      color={activeLogoColor}
+      heightMobile={cfg.logoHeightMobile}
+      heightDesktop={cfg.logoHeightDesktop}
+      focusClassName={
         isTransparent
           ? "focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
           : "focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
-      )}
-    >
-      <BrandLogo
-        variant={cfg.logoVariant}
-        color={activeLogoColor}
-        heightMobile={cfg.logoHeightMobile}
-        heightDesktop={cfg.logoHeightDesktop}
-      />
-    </Link>
+      }
+    />
   );
 
   return (

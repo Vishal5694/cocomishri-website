@@ -1,9 +1,14 @@
 import * as React from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { getBrandHex, type LogoColorKey } from "@/lib/brand-colors";
 import type { LogoVariant } from "@/lib/header-config";
 import { cn } from "@/lib/utils";
+
+const OriginalLightSvg = dynamic(() =>
+  import("./OriginalLightSvgs").then((m) => m.OriginalLightSvg)
+);
 
 interface BrandLogoProps {
   variant?: LogoVariant;
@@ -37,12 +42,14 @@ const SVG_SPECS = {
 } as const;
 
 function SvgGraphic({
+  variantKey,
   spec,
   color,
   heightVar,
   multiplier = 1,
   alt,
 }: {
+  variantKey: keyof typeof SVG_SPECS;
   spec: (typeof SVG_SPECS)[keyof typeof SVG_SPECS];
   color: LogoColorKey;
   heightVar: string;
@@ -50,6 +57,19 @@ function SvgGraphic({
   alt: string;
 }) {
   const url = asset(spec.src);
+  const resolvedHeight =
+    multiplier === 1 ? heightVar : `calc(${heightVar} * ${multiplier})`;
+
+  if (color === "original-light") {
+    return (
+      <OriginalLightSvg
+        variant={variantKey}
+        height={resolvedHeight}
+        aspectRatio={spec.ratio}
+        alt={alt}
+      />
+    );
+  }
 
   if (color === "original") {
     return (
@@ -61,10 +81,7 @@ function SvgGraphic({
         loading="lazy"
         className="w-auto object-contain block"
         style={{
-          height:
-            multiplier === 1
-              ? heightVar
-              : `calc(${heightVar} * ${multiplier})`,
+          height: resolvedHeight,
         }}
       />
     );
@@ -77,10 +94,7 @@ function SvgGraphic({
       aria-label={alt}
       className="inline-block shrink-0"
       style={{
-        height:
-          multiplier === 1
-            ? heightVar
-            : `calc(${heightVar} * ${multiplier})`,
+        height: resolvedHeight,
         aspectRatio: spec.ratio,
         backgroundColor: hex,
         maskImage: `url(${url})`,
@@ -116,6 +130,7 @@ export function BrandLogo({
     variant === "mascot-left" ? (
       <span className="inline-flex items-center gap-2">
         <SvgGraphic
+          variantKey="mascot"
           spec={SVG_SPECS.mascot}
           color={color}
           heightVar={heightCss}
@@ -123,6 +138,7 @@ export function BrandLogo({
           alt=""
         />
         <SvgGraphic
+          variantKey="wordmark"
           spec={SVG_SPECS.wordmark}
           color={color}
           heightVar={heightCss}
@@ -131,6 +147,7 @@ export function BrandLogo({
       </span>
     ) : variant === "full" ? (
       <SvgGraphic
+        variantKey="full"
         spec={SVG_SPECS.full}
         color={color}
         heightVar={heightCss}
@@ -138,6 +155,7 @@ export function BrandLogo({
       />
     ) : variant === "mascot" ? (
       <SvgGraphic
+        variantKey="mascot"
         spec={SVG_SPECS.mascot}
         color={color}
         heightVar={heightCss}
@@ -145,6 +163,7 @@ export function BrandLogo({
       />
     ) : (
       <SvgGraphic
+        variantKey="wordmark"
         spec={SVG_SPECS.wordmark}
         color={color}
         heightVar={heightCss}

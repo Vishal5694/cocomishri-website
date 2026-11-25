@@ -18,7 +18,7 @@ export const brandColors = [
 ] as const;
 
 export type BrandColorKey = (typeof brandColors)[number]["key"];
-export type LogoColorKey = BrandColorKey | "original";
+export type LogoColorKey = BrandColorKey | "original" | "original-light";
 
 const HEX_MAP = new Map<string, string>(
   brandColors.map((c) => [c.key, c.hex])

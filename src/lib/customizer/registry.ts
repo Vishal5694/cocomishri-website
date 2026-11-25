@@ -215,9 +215,22 @@ export const siteHeaderSection: Section<HeaderConfig> = {
       ],
     },
     {
+      kind: "toggle",
+      key: "sameLogoColor",
+      label: "Use the same logo colour everywhere",
+      group: "Logo",
+    },
+    {
       kind: "color",
       key: "logoColor",
-      label: "Logo colour",
+      label: "Logo colour – cream header (after scrolling)",
+      group: "Logo",
+      allowOriginal: true,
+    },
+    {
+      kind: "color",
+      key: "logoColorOverHero",
+      label: "Logo colour – over hero photo (top of home)",
       group: "Logo",
       allowOriginal: true,
     },
@@ -331,13 +344,6 @@ export const siteHeaderSection: Section<HeaderConfig> = {
       key: "transparentOnHero",
       label: "Transparent over hero",
       group: "Over the hero",
-    },
-    {
-      kind: "color",
-      key: "logoColorOverHero",
-      label: "Logo colour over hero",
-      group: "Over the hero",
-      allowOriginal: true,
     },
     {
       kind: "color",
