@@ -49,6 +49,11 @@ export function MenuDrawer({
 }: MenuDrawerProps) {
   const pathname = usePathname();
   const prevPathnameRef = React.useRef(pathname);
+  const isOpenRef = React.useRef(isOpen);
+  const onCloseRef = React.useRef(onClose);
+  isOpenRef.current = isOpen;
+  onCloseRef.current = onClose;
+
   const { department, setDepartment } = useDepartment();
   const cartCount = useCartCount();
   const { recentlyViewed } = useRecentlyViewed();
@@ -69,7 +74,12 @@ export function MenuDrawer({
 
   const drawerRef = React.useRef<HTMLDivElement>(null);
   const closeBtnRef = React.useRef<HTMLButtonElement>(null);
+  const backBtnRef = React.useRef<HTMLButtonElement>(null);
   const tabRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
+  const subMenuTriggerRefs = React.useRef<
+    Record<string, HTMLButtonElement | null>
+  >({});
+  const lastOpenedSubMenuRef = React.useRef<DrawerSubMenu["id"] | null>(null);
 
   // Sync active tab when drawer opens
   React.useEffect(() => {
@@ -79,15 +89,25 @@ export function MenuDrawer({
     }
   }, [isOpen, department]);
 
-  // Close on route change
+  // Close on PATHNAME change only (not search-param change)
   React.useEffect(() => {
     if (prevPathnameRef.current !== pathname) {
       prevPathnameRef.current = pathname;
-      if (isOpen) {
-        onClose();
+      if (isOpenRef.current) {
+        onCloseRef.current();
       }
     }
-  }, [pathname, isOpen, onClose]);
+  }, [pathname]);
+
+  // Move focus to Back button when a sub-menu opens
+  React.useEffect(() => {
+    if (isOpen && activeSubMenu !== null) {
+      const raf = window.requestAnimationFrame(() => {
+        backBtnRef.current?.focus();
+      });
+      return () => window.cancelAnimationFrame(raf);
+    }
+  }, [isOpen, activeSubMenu]);
 
   // Focus trap, scroll lock, Escape
   React.useEffect(() => {
@@ -104,9 +124,11 @@ export function MenuDrawer({
       }
 
       if (e.key === "Tab" && drawerRef.current) {
-        const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
-        );
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => !el.closest("[inert]"));
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
@@ -132,6 +154,7 @@ export function MenuDrawer({
   const handleTabSelect = (id: DepartmentId) => {
     setActiveTab(id);
     setOpenAccordions({});
+    setActiveSubMenu(null);
     setDepartment(id);
   };
 
@@ -153,6 +176,21 @@ export function MenuDrawer({
     tabRefs.current[target.id]?.focus();
   };
 
+  const handleOpenSubMenu = (id: DrawerSubMenu["id"]) => {
+    lastOpenedSubMenuRef.current = id;
+    setActiveSubMenu(id);
+  };
+
+  const handleCloseSubMenu = () => {
+    const returnId = lastOpenedSubMenuRef.current;
+    setActiveSubMenu(null);
+    if (returnId) {
+      window.requestAnimationFrame(() => {
+        subMenuTriggerRefs.current[returnId]?.focus();
+      });
+    }
+  };
+
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -169,6 +207,7 @@ export function MenuDrawer({
 
   const currentDeptContent = drawerNav[activeTab];
   const currentSubMenuObj = drawerMore.find((m) => m.id === activeSubMenu);
+  const isSubMenuOpen = activeSubMenu !== null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -244,10 +283,11 @@ export function MenuDrawer({
         <div className="relative flex-1 overflow-hidden">
           {/* Main Drawer View */}
           <div
-            aria-hidden={activeSubMenu !== null}
+            aria-hidden={isSubMenuOpen}
+            inert={isSubMenuOpen}
             className={cn(
               "h-full overflow-y-auto transition-transform duration-300 ease-soft motion-reduce:transition-none",
-              activeSubMenu !== null
+              isSubMenuOpen
                 ? "-translate-x-full pointer-events-none"
                 : "translate-x-0"
             )}
@@ -368,8 +408,11 @@ export function MenuDrawer({
               {drawerMore.map((item) => (
                 <button
                   key={item.id}
+                  ref={(el) => {
+                    subMenuTriggerRefs.current[item.id] = el;
+                  }}
                   type="button"
-                  onClick={() => setActiveSubMenu(item.id)}
+                  onClick={() => handleOpenSubMenu(item.id)}
                   className="w-full min-h-[48px] flex items-center justify-between text-[13px] font-semibold uppercase tracking-[0.06em] text-cocoa-900 hover:text-blush-700 text-left"
                 >
                   <span>{item.label}</span>
@@ -523,57 +566,69 @@ export function MenuDrawer({
           </div>
 
           {/* Slide-In Sub-Menu View */}
-          {activeSubMenu && currentSubMenuObj && (
-            <div className="absolute inset-0 bg-cream-50 flex flex-col overflow-y-auto transition-transform duration-300 ease-soft motion-reduce:transition-none translate-x-0">
-              <button
-                type="button"
-                onClick={() => setActiveSubMenu(null)}
-                aria-label="Back"
-                className="w-full min-h-[48px] px-4 border-b border-sand-300 bg-sand-100 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.06em] text-cocoa-900 hover:text-blush-700 text-left shrink-0"
-              >
-                <ChevronLeft size={16} strokeWidth={1.5} />
-                <span>{currentSubMenuObj.label}</span>
-              </button>
+          <div
+            aria-hidden={!isSubMenuOpen}
+            inert={!isSubMenuOpen}
+            className={cn(
+              "absolute inset-0 bg-cream-50 flex flex-col overflow-y-auto transition-transform duration-300 ease-soft motion-reduce:transition-none",
+              isSubMenuOpen
+                ? "translate-x-0"
+                : "translate-x-full pointer-events-none"
+            )}
+          >
+            {currentSubMenuObj && (
+              <>
+                <button
+                  ref={backBtnRef}
+                  type="button"
+                  onClick={handleCloseSubMenu}
+                  aria-label="Back"
+                  className="w-full min-h-[48px] px-4 border-b border-sand-300 bg-sand-100 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.06em] text-cocoa-900 hover:text-blush-700 text-left shrink-0"
+                >
+                  <ChevronLeft size={16} strokeWidth={1.5} />
+                  <span>{currentSubMenuObj.label}</span>
+                </button>
 
-              {activeSubMenu === "recently-viewed" ? (
-                <div className="p-5">
-                  {recentlyViewed.length === 0 ? (
-                    <p className="text-sm text-cocoa-700">
-                      Pieces you look at will appear here.
-                    </p>
-                  ) : (
-                    <ul className="divide-y divide-sand-300">
-                      {recentlyViewed.map((id) => (
-                        <li key={id}>
-                          <Link
-                            href={`/products/${id}`}
-                            onClick={onClose}
-                            className="min-h-[48px] flex items-center text-[15px] font-medium text-cocoa-900 hover:text-blush-700 hover:underline"
-                          >
-                            {id}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : (
-                <ul className="px-5 divide-y divide-sand-300">
-                  {currentSubMenuObj.links?.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        onClick={onClose}
-                        className="min-h-[48px] flex items-center text-[15px] font-medium text-cocoa-900 hover:text-blush-700 hover:underline"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+                {activeSubMenu === "recently-viewed" ? (
+                  <div className="p-5">
+                    {recentlyViewed.length === 0 ? (
+                      <p className="text-sm text-cocoa-700">
+                        Pieces you look at will appear here.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-sand-300">
+                        {recentlyViewed.map((id) => (
+                          <li key={id}>
+                            <Link
+                              href={`/products/${id}`}
+                              onClick={onClose}
+                              className="min-h-[48px] flex items-center text-[15px] font-medium text-cocoa-900 hover:text-blush-700 hover:underline"
+                            >
+                              {id}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : (
+                  <ul className="px-5 divide-y divide-sand-300">
+                    {currentSubMenuObj.links?.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          onClick={onClose}
+                          className="min-h-[48px] flex items-center text-[15px] font-medium text-cocoa-900 hover:text-blush-700 hover:underline"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

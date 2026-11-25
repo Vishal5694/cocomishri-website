@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { DepartmentId } from "@/lib/navigation";
 
 const STORAGE_KEY = "cm_dept";
@@ -31,7 +31,6 @@ export function DepartmentProvider({
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || "";
-  const router = useRouter();
   const [department, setDepartmentState] =
     React.useState<DepartmentId>("baby-toddler");
 
@@ -77,11 +76,13 @@ export function DepartmentProvider({
       } catch {
         // Ignore storage errors
       }
-      if (isHome) {
-        router.replace(`/?dept=${id}`, { scroll: false });
+      if (isHome && typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("dept", id);
+        window.history.replaceState(null, "", url.toString());
       }
     },
-    [isHome, router]
+    [isHome]
   );
 
   return (
