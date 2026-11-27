@@ -1,0 +1,10 @@
+{
+  "src/lib/header-config.ts": "962591febcd5895344fa50b562d659c69727a88a90e93c781b09c7eb7e88f006",
+  "src/lib/hero-v2-config.ts": "fb266d3c32e773a07e0f91543aef29b3c1c08a27edecda27dbf849f1285b205d",
+  "src/components/header/SiteHeader.tsx": "699c388f433dce12f7b58c685c6fde08dc4531b59cd2e1538bee36ae5eb49362",
+  "src/components/header/TopBar.tsx": "55474d5c7f2cb1b68b6761380f8d8b1f5ebf062b3b56712af1b7d43605c8c17a",
+  "src/components/header/MenuDrawer.tsx": "7adbc7b31975aca020402566f812e82a615a1c168f4c61525cb3bfccbf46db53",
+  "src/components/header/CountrySelector.tsx": "4bc02f73b7e3a8694d0e42ee971fcfd906cd62a4406b133d771758522f553f41",
+  "src/components/brand/BrandLogo.tsx": "5072ae1f939b21007e55de6636fc7c1775229d03ce6a6da089666c75ad70dddb",
+  "src/components/v2/HeroSliderV2.tsx": "cc8f9df3fec2700378986bc0ca5334287ad9fffc4d14f03d93c84c5dc9a6e10a"
+}

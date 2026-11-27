@@ -5,18 +5,13 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { CampaignTitle } from "./CampaignTitle";
 import { TextLink } from "./TextLink";
-import {
-  isCustomizerEnabled,
-  useSectionConfig,
-} from "@/lib/customizer/CustomizerContext";
-import {
-  AVAILABLE_HERO_V2_SLIDES,
-  DEFAULT_HERO_V2_CONFIG,
-  type HeroV2Config,
-} from "@/lib/hero-v2-config";
+import { HERO_CONFIG, type HeroV2Config } from "@/lib/hero-v2-config";
+import { images, type ImageEntry, type ImageKey } from "@/lib/images";
+import imageLoader from "@/lib/image-loader";
+import { cn } from "@/lib/utils";
 
 const REFERENCE_V2_CONFIG: HeroV2Config = {
-  ...DEFAULT_HERO_V2_CONFIG,
+  ...HERO_CONFIG,
   mediaType: "photo",
   headingVisible: false,
   intervalSec: 6,
@@ -30,9 +25,6 @@ const REFERENCE_V2_CONFIG: HeroV2Config = {
   },
   scrimPercent: 55,
 };
-import { images, type ImageEntry, type ImageKey } from "@/lib/images";
-import imageLoader from "@/lib/image-loader";
-import { cn } from "@/lib/utils";
 
 const COLOUR_BG_CLASSES = [
   "bg-sand-100",
@@ -77,29 +69,18 @@ export function HeroSliderV2({
   headingText?: string;
   useCustomizerConfig?: boolean;
 }) {
-  const customCfg = useSectionConfig("home-hero");
-  const isCustomActive = useCustomizerConfig && isCustomizerEnabled;
-  const cfg = useCustomizerConfig
-    ? isCustomizerEnabled
-      ? customCfg
-      : DEFAULT_HERO_V2_CONFIG
-    : REFERENCE_V2_CONFIG;
+  const cfg = useCustomizerConfig ? HERO_CONFIG : REFERENCE_V2_CONFIG;
 
   const slides = React.useMemo<HeroSlideData[]>(() => {
     if (!useCustomizerConfig) return propSlides;
 
-    const metaMap = new Map(AVAILABLE_HERO_V2_SLIDES.map((s) => [s.id, s]));
-
     const activeList = cfg.slides
       .filter((s) => s.enabled)
-      .map((s): HeroSlideData | null => {
-        const meta = metaMap.get(s.id);
-        if (!meta) return null;
-
+      .map((s): HeroSlideData => {
         const links: { label: string; href: string }[] = [
           {
-            label: s.link1Text || meta.link1Text || "Shop now",
-            href: s.link1Href || meta.link1Href || "/shop",
+            label: s.link1Text || "Shop now",
+            href: s.link1Href || "/shop",
           },
         ];
         if (s.link2Text && s.link2Href) {
@@ -107,21 +88,19 @@ export function HeroSliderV2({
         }
 
         const focusStr = `${s.focusX}% ${s.focusY}%`;
-        const resolvedKey = s.imageKey || meta.imageKey;
-        const entry = images[resolvedKey] as ImageEntry;
+        const entry = images[s.imageKey] as ImageEntry;
 
         return {
-          id: meta.id,
+          id: s.id,
           title: s.title,
           links,
-          fallbackSrc: resolveImageUrl(resolvedKey),
+          fallbackSrc: resolveImageUrl(s.imageKey),
           alt: entry?.alt || s.title,
           desktopPosition: focusStr,
           shot: entry?.shot,
           videoUrl: s.previewVideoUrl || undefined,
         };
-      })
-      .filter((x): x is HeroSlideData => x !== null);
+      });
 
     return activeList.length > 0 ? activeList : propSlides;
   }, [useCustomizerConfig, cfg.slides, propSlides]);

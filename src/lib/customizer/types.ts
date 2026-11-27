@@ -48,7 +48,7 @@ export type Option =
     };
 
 export interface Section<T = unknown> {
-  id: "home-hero";
+  id: string;
   title: string;
   options: Option[];
   defaults: T;

@@ -1,30 +1,30 @@
 "use client";
 
 import * as React from "react";
-import { homeHeroSection, type SectionId } from "./registry";
-import {
-  DEFAULT_HERO_V2_CONFIG,
-  type HeroV2Config,
-} from "@/lib/hero-v2-config";
+import { customizerSections, type SectionId } from "./registry";
 
 const STORAGE_KEY = "cm_customizer_v1";
 
 export const isCustomizerEnabled =
   process.env.NEXT_PUBLIC_ENABLE_CUSTOMIZER === "true";
 
-export type ConfigMap = {
-  "home-hero": HeroV2Config;
-};
+export type ConfigMap = Record<string, unknown>;
 
 interface CustomizerContextValue {
   configs: ConfigMap;
-  updateConfig: <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => void;
+  updateConfig: (sectionId: SectionId, next: unknown) => void;
   resetConfig: (sectionId: SectionId) => void;
 }
 
-const DEFAULT_MAP: ConfigMap = {
-  "home-hero": DEFAULT_HERO_V2_CONFIG,
-};
+function buildDefaultMap(): ConfigMap {
+  const map: ConfigMap = {};
+  for (const sec of customizerSections) {
+    map[sec.id] = sec.defaults;
+  }
+  return map;
+}
+
+const DEFAULT_MAP: ConfigMap = buildDefaultMap();
 
 const CustomizerContext = React.createContext<CustomizerContextValue>({
   configs: DEFAULT_MAP,
@@ -50,6 +50,19 @@ export function encodeBase64Utf8(text: string): string {
   return window.btoa(binary);
 }
 
+function stripLockedKeys(raw: Record<string, unknown>): {
+  cleaned: ConfigMap;
+  hadLockedKeys: boolean;
+} {
+  const hadLockedKeys = "home-hero" in raw || "site-header" in raw;
+  const cleaned: ConfigMap = {};
+  for (const sec of customizerSections) {
+    cleaned[sec.id] =
+      sec.id in raw ? sec.validate(raw[sec.id]) : sec.defaults;
+  }
+  return { cleaned, hadLockedKeys };
+}
+
 export function CustomizerProvider({
   children,
 }: {
@@ -59,7 +72,11 @@ export function CustomizerProvider({
 
   const persist = React.useCallback((nextMap: ConfigMap) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMap));
+      if (Object.keys(nextMap).length === 0) {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } else {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMap));
+      }
     } catch {
       // Ignore storage errors
     }
@@ -68,7 +85,7 @@ export function CustomizerProvider({
   React.useEffect(() => {
     if (!isCustomizerEnabled || typeof window === "undefined") return;
 
-    // 1. Check #cm= hash first (ignore any site-header key)
+    // 1. Check #cm= hash (ignore locked 'home-hero' and 'site-header')
     const hash = window.location.hash;
     if (hash.startsWith("#cm=")) {
       const payload = hash.slice(4);
@@ -79,34 +96,33 @@ export function CustomizerProvider({
       );
       try {
         const decoded = decodeBase64Utf8(decodeURIComponent(payload));
-        const parsed = JSON.parse(decoded) as Record<string, unknown>;
-        const nextHero =
-          parsed && typeof parsed === "object" && "home-hero" in parsed
-            ? homeHeroSection.validate(parsed["home-hero"])
-            : homeHeroSection.validate(parsed);
-        const nextMap: ConfigMap = { "home-hero": nextHero };
-        setConfigs(nextMap);
-        persist(nextMap);
-        return;
+        const parsed = JSON.parse(decoded);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const { cleaned } = stripLockedKeys(
+            parsed as Record<string, unknown>
+          );
+          setConfigs(cleaned);
+          persist(cleaned);
+          return;
+        }
       } catch {
         // Broken hash/JSON falls back cleanly
       }
     }
 
-    // 2. Load from localStorage and strip any legacy 'site-header' key
+    // 2. Load from localStorage and delete any locked 'home-hero' or 'site-header' data
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Record<string, unknown>;
-        const nextMap: ConfigMap = {
-          "home-hero":
-            parsed && typeof parsed === "object" && "home-hero" in parsed
-              ? homeHeroSection.validate(parsed["home-hero"])
-              : DEFAULT_HERO_V2_CONFIG,
-        };
-        setConfigs(nextMap);
-        if (parsed && typeof parsed === "object" && "site-header" in parsed) {
-          persist(nextMap);
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const { cleaned, hadLockedKeys } = stripLockedKeys(
+            parsed as Record<string, unknown>
+          );
+          setConfigs(cleaned);
+          if (hadLockedKeys) {
+            persist(cleaned);
+          }
         }
       }
     } catch {
@@ -114,7 +130,6 @@ export function CustomizerProvider({
     }
   }, [persist]);
 
-  // Listen to storage events for live PhonePreview iframe sync
   React.useEffect(() => {
     if (!isCustomizerEnabled || typeof window === "undefined") return;
 
@@ -125,14 +140,13 @@ export function CustomizerProvider({
         return;
       }
       try {
-        const parsed = JSON.parse(e.newValue) as Record<string, unknown>;
-        const nextMap: ConfigMap = {
-          "home-hero":
-            parsed && typeof parsed === "object" && "home-hero" in parsed
-              ? homeHeroSection.validate(parsed["home-hero"])
-              : DEFAULT_HERO_V2_CONFIG,
-        };
-        setConfigs(nextMap);
+        const parsed = JSON.parse(e.newValue);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const { cleaned } = stripLockedKeys(
+            parsed as Record<string, unknown>
+          );
+          setConfigs(cleaned);
+        }
       } catch {
         // Ignore broken storage
       }
@@ -143,9 +157,11 @@ export function CustomizerProvider({
   }, []);
 
   const updateConfig = React.useCallback(
-    <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => {
+    (sectionId: SectionId, next: unknown) => {
       if (!isCustomizerEnabled) return;
-      const validated = homeHeroSection.validate(next) as ConfigMap[K];
+      const sec = customizerSections.find((s) => s.id === sectionId);
+      if (!sec) return;
+      const validated = sec.validate(next);
       setConfigs((prev) => {
         const nextMap = { ...prev, [sectionId]: validated };
         persist(nextMap);
@@ -158,8 +174,10 @@ export function CustomizerProvider({
   const resetConfig = React.useCallback(
     (sectionId: SectionId) => {
       if (!isCustomizerEnabled) return;
+      const sec = customizerSections.find((s) => s.id === sectionId);
+      if (!sec) return;
       setConfigs((prev) => {
-        const nextMap = { ...prev, [sectionId]: DEFAULT_MAP[sectionId] };
+        const nextMap = { ...prev, [sectionId]: sec.defaults };
         persist(nextMap);
         return nextMap;
       });
@@ -174,14 +192,12 @@ export function CustomizerProvider({
   );
 }
 
-export function useSectionConfig<K extends SectionId>(
-  sectionId: K
-): ConfigMap[K] {
+export function useSectionConfig<T = unknown>(sectionId: SectionId): T | undefined {
   const ctx = React.useContext(CustomizerContext);
   if (!isCustomizerEnabled) {
-    return DEFAULT_MAP[sectionId];
+    return DEFAULT_MAP[sectionId] as T | undefined;
   }
-  return ctx.configs[sectionId] ?? DEFAULT_MAP[sectionId];
+  return (ctx.configs[sectionId] ?? DEFAULT_MAP[sectionId]) as T | undefined;
 }
 
 export function useCustomizer() {

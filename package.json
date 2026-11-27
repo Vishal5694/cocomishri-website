@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/check-locked.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lock:check": "node scripts/check-locked.mjs",
+    "lock:approve": "node scripts/approve-locked.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -5,102 +5,32 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  ArrowUp,
-  ArrowDown,
   Smartphone,
   RotateCcw,
   Share2,
   Copy,
 } from "lucide-react";
-import { homeHeroSection } from "@/lib/customizer/registry";
-import type { Option, OptionGroup } from "@/lib/customizer/types";
+import { customizerSections, type SectionId } from "@/lib/customizer/registry";
+import type { Option } from "@/lib/customizer/types";
 import {
   useCustomizer,
-  useSectionConfig,
   encodeBase64Utf8,
 } from "@/lib/customizer/CustomizerContext";
-import {
-  HERO_V2_IMAGE_OPTIONS,
-  HERO_V2_LINK_OPTIONS,
-  HERO_V2_OPTIONAL_LINK_OPTIONS,
-  type HeroV2Config,
-  type HeroV2SlideSetting,
-} from "@/lib/hero-v2-config";
-import type { ImageKey } from "@/lib/images";
 import { PhonePreview } from "./PhonePreview";
 import { cn } from "@/lib/utils";
 
-const HERO_GROUPS: OptionGroup[] = [
-  "Layout",
-  "Slides",
-  "Text",
-  "Links",
-  "Motion",
-  "Controls",
-  "Photos",
-];
-
-function buildHeroSummary(config: HeroV2Config): string {
-  const lines: string[] = ["HOME HERO SETTINGS", ""];
-
-  for (const opt of homeHeroSection.options) {
-    if (opt.kind === "choice") {
-      const val = String(config[opt.key as keyof HeroV2Config] ?? "");
-      const choice = opt.choices.find((c) => c.value === val);
-      lines.push(`${opt.label}: ${choice ? choice.label : val}`);
-    } else if (opt.kind === "toggle") {
-      const val = Boolean(config[opt.key as keyof HeroV2Config]);
-      lines.push(`${opt.label}: ${val ? "On" : "Off"}`);
-    } else if (opt.kind === "range") {
-      const val = config[opt.key as keyof HeroV2Config];
-      lines.push(`${opt.label}: ${val}${opt.unit ?? ""}`);
-    } else if (opt.kind === "text") {
-      const val = String(config[opt.key as keyof HeroV2Config] ?? "");
-      lines.push(`${opt.label}: ${val}`);
-    } else if (opt.kind === "multi") {
-      const active = opt.choices
-        .filter((c) => config.controls[c.value as keyof HeroV2Config["controls"]])
-        .map((c) => c.label);
-      lines.push(`${opt.label}: ${active.length > 0 ? active.join(", ") : "None"}`);
-    }
-  }
-
-  lines.push("", "Slides (in order):");
-  config.slides.forEach((s, idx) => {
-    const status = s.enabled ? "ON" : "OFF";
-    const parts = [
-      `${idx + 1}. [${status}] ${s.title}`,
-      `link1="${s.link1Text}" (${s.link1Href})`,
-      s.link2Text && s.link2Href
-        ? `link2="${s.link2Text}" (${s.link2Href})`
-        : null,
-      `focus=${s.focusX}% ${s.focusY}%`,
-      s.previewVideoUrl ? `video=${s.previewVideoUrl}` : null,
-    ].filter(Boolean);
-    lines.push(parts.join(" | "));
-  });
-
-  lines.push("", "JSON:", JSON.stringify(config, null, 2));
-  return lines.join("\n");
-}
-
 export function CustomizerPanel() {
-  const heroConfig = useSectionConfig("home-hero");
-  const { updateConfig, resetConfig } = useCustomizer();
-
+  const { configs, updateConfig, resetConfig } = useCustomizer();
+  const [activeSection, setActiveSection] = React.useState<SectionId>(
+    customizerSections[0]?.id ?? ""
+  );
   const [isOpen, setIsOpen] = React.useState(false);
   const [showPhonePreview, setShowPhonePreview] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
   const [copiedMsg, setCopiedMsg] = React.useState<string | null>(null);
-  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
-    Layout: true,
-    Slides: true,
-    Text: false,
-    Links: false,
-    Motion: false,
-    Controls: false,
-    Photos: false,
-  });
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>(
+    {}
+  );
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const closeBtnRef = React.useRef<HTMLButtonElement>(null);
@@ -129,6 +59,19 @@ export function CustomizerPanel() {
     };
   }, []);
 
+  if (customizerSections.length === 0) {
+    return null;
+  }
+
+  const section =
+    customizerSections.find((s) => s.id === activeSection) ??
+    customizerSections[0];
+  const currentConfig = (configs[section.id] ?? section.defaults) as Record<
+    string,
+    unknown
+  >;
+  const groups = Array.from(new Set(section.options.map((o) => o.group)));
+
   const flashCopied = (msg: string) => {
     setCopiedMsg(msg);
     if (copiedTimerRef.current !== null) {
@@ -143,7 +86,7 @@ export function CustomizerPanel() {
   const handleCopyShareLink = async () => {
     try {
       const encoded = encodeURIComponent(
-        encodeBase64Utf8(JSON.stringify({ "home-hero": heroConfig }))
+        encodeBase64Utf8(JSON.stringify(configs))
       );
       const url = `${window.location.origin}${window.location.pathname}${window.location.search}#cm=${encoded}`;
       await navigator.clipboard.writeText(url);
@@ -155,35 +98,21 @@ export function CustomizerPanel() {
 
   const handleCopySettings = async () => {
     try {
-      const text = buildHeroSummary(heroConfig);
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(
+        JSON.stringify(currentConfig, null, 2)
+      );
       flashCopied("Copied");
     } catch {
       flashCopied("Copied");
     }
   };
 
-  const updateSlide = (idx: number, patch: Partial<HeroV2SlideSetting>) => {
-    const nextSlides = heroConfig.slides.map((s, i) =>
-      i === idx ? { ...s, ...patch } : s
-    );
-    updateConfig("home-hero", { ...heroConfig, slides: nextSlides });
-  };
-
-  const moveSlide = (idx: number, delta: -1 | 1) => {
-    const target = idx + delta;
-    if (target < 0 || target >= heroConfig.slides.length) return;
-    const nextSlides = [...heroConfig.slides];
-    const [item] = nextSlides.splice(idx, 1);
-    nextSlides.splice(target, 0, item);
-    updateConfig("home-hero", { ...heroConfig, slides: nextSlides });
+  const setField = (key: string, value: unknown) => {
+    updateConfig(section.id, { ...currentConfig, [key]: value });
   };
 
   const renderOption = (opt: Option) => {
-    const rawRecord = heroConfig as unknown as Record<string, unknown>;
-
     if (opt.kind === "choice") {
-      const value = String(rawRecord[opt.key] ?? "");
       return (
         <div key={opt.key} className="space-y-1.5">
           <label
@@ -194,14 +123,9 @@ export function CustomizerPanel() {
           </label>
           <select
             id={`cm-opt-${opt.key}`}
-            value={value}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...heroConfig,
-                [opt.key]: e.target.value,
-              } as HeroV2Config)
-            }
-            className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            value={String(currentConfig[opt.key] ?? "")}
+            onChange={(e) => setField(opt.key, e.target.value)}
+            className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900"
           >
             {opt.choices.map((c) => (
               <option key={c.value} value={c.value}>
@@ -214,7 +138,6 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "toggle") {
-      const checked = Boolean(rawRecord[opt.key]);
       return (
         <label
           key={opt.key}
@@ -225,13 +148,8 @@ export function CustomizerPanel() {
           </span>
           <input
             type="checkbox"
-            checked={checked}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...heroConfig,
-                [opt.key]: e.target.checked,
-              } as HeroV2Config)
-            }
+            checked={Boolean(currentConfig[opt.key])}
+            onChange={(e) => setField(opt.key, e.target.checked)}
             className="size-5 accent-cocoa-900 cursor-pointer"
           />
         </label>
@@ -239,7 +157,7 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "range") {
-      const value = Number(rawRecord[opt.key] ?? opt.min);
+      const value = Number(currentConfig[opt.key] ?? opt.min);
       return (
         <div key={opt.key} className="space-y-1">
           <div className="flex items-center justify-between text-[13px] font-semibold text-cocoa-900">
@@ -256,12 +174,7 @@ export function CustomizerPanel() {
             max={opt.max}
             step={opt.step}
             value={value}
-            onChange={(e) =>
-              updateConfig("home-hero", {
-                ...heroConfig,
-                [opt.key]: Number(e.target.value),
-              } as HeroV2Config)
-            }
+            onChange={(e) => setField(opt.key, Number(e.target.value))}
             className="w-full accent-cocoa-900 cursor-pointer"
           />
         </div>
@@ -269,7 +182,6 @@ export function CustomizerPanel() {
     }
 
     if (opt.kind === "text") {
-      const value = String(rawRecord[opt.key] ?? "");
       return (
         <div key={opt.key} className="space-y-1">
           <label
@@ -281,86 +193,39 @@ export function CustomizerPanel() {
           <input
             id={`cm-opt-${opt.key}`}
             type="text"
-            value={value}
+            value={String(currentConfig[opt.key] ?? "")}
             maxLength={opt.maxLength}
             placeholder={opt.placeholder}
             onChange={(e) =>
-              updateConfig("home-hero", {
-                ...heroConfig,
-                [opt.key]: e.target.value.slice(0, opt.maxLength),
-              } as HeroV2Config)
+              setField(opt.key, e.target.value.slice(0, opt.maxLength))
             }
-            className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900 focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+            className="w-full min-h-[44px] px-3 rounded-[10px] bg-sand-100 border border-sand-300 text-[14px] text-cocoa-900"
           />
         </div>
-      );
-    }
-
-    if (opt.kind === "multi") {
-      return (
-        <fieldset key={opt.key} className="space-y-2">
-          <legend className="text-[13px] font-semibold text-cocoa-900">
-            {opt.label}
-          </legend>
-          <div className="grid grid-cols-2 gap-1.5">
-            {opt.choices.map((c) => {
-              const checked = Boolean(
-                heroConfig.controls[c.value as keyof HeroV2Config["controls"]]
-              );
-              return (
-                <label
-                  key={c.value}
-                  className="min-h-[44px] px-2.5 rounded-[10px] bg-sand-100 flex items-center gap-2 text-[13px] text-cocoa-900 cursor-pointer select-none"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) =>
-                      updateConfig("home-hero", {
-                        ...heroConfig,
-                        controls: {
-                          ...heroConfig.controls,
-                          [c.value]: e.target.checked,
-                        },
-                      })
-                    }
-                    className="size-4 accent-cocoa-900 cursor-pointer"
-                  />
-                  <span>{c.label}</span>
-                </label>
-              );
-            })}
-          </div>
-        </fieldset>
       );
     }
 
     return null;
   };
 
-  const enabledCount = heroConfig.slides.filter((s) => s.enabled).length;
-
   return (
     <>
-      {/* Floating Customize button (bottom-LEFT) */}
       {!isOpen && (
         <button
           ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 left-4 z-50 h-11 min-h-[44px] px-5 rounded-pill bg-cocoa-900 text-cream-50 font-body text-sm font-semibold shadow-lg inline-flex items-center gap-2 hover:bg-cocoa-700 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+          className="fixed bottom-4 left-4 z-50 h-11 min-h-[44px] px-5 rounded-pill bg-cocoa-900 text-cream-50 font-body text-sm font-semibold shadow-lg inline-flex items-center gap-2 hover:bg-cocoa-700 transition-colors"
         >
           <SlidersHorizontal size={16} strokeWidth={1.75} />
           <span>Customize</span>
         </button>
       )}
 
-      {/* Floating Phone Preview */}
       {showPhonePreview && (
         <PhonePreview onClose={() => setShowPhonePreview(false)} />
       )}
 
-      {/* 380px Left Side Panel (no scroll lock, no overlay) */}
       {isOpen && (
         <aside
           role="dialog"
@@ -368,14 +233,13 @@ export function CustomizerPanel() {
           aria-label="Section Customizer"
           className="fixed inset-y-0 left-0 z-50 w-full sm:w-[380px] bg-cream-50 text-cocoa-900 border-r border-sand-300 shadow-2xl flex flex-col font-body text-[14px]"
         >
-          {/* Header */}
           <div className="px-4 py-3 border-b border-sand-300 bg-sand-100 flex items-center justify-between shrink-0">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-cocoa-700">
                 Section Customizer
               </p>
               <h2 className="font-heading text-lg font-medium text-cocoa-900 leading-tight">
-                {homeHeroSection.title}
+                {section.title}
               </h2>
             </div>
 
@@ -387,20 +251,38 @@ export function CustomizerPanel() {
                 triggerRef.current?.focus();
               }}
               aria-label="Close customizer"
-              className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors focus-visible:outline-2 focus-visible:outline-blush-700 focus-visible:outline-offset-2"
+              className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors"
             >
               <X size={20} strokeWidth={1.5} />
             </button>
           </div>
 
-          {/* Scrollable Groups */}
+          {customizerSections.length > 1 && (
+            <div className="px-4 py-2 border-b border-sand-300 flex gap-1">
+              {customizerSections.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setActiveSection(s.id)}
+                  className={cn(
+                    "px-3 py-1 rounded-pill text-xs font-semibold",
+                    s.id === section.id
+                      ? "bg-cocoa-900 text-cream-50"
+                      : "text-cocoa-700"
+                  )}
+                >
+                  {s.title}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto divide-y divide-sand-300">
-            {HERO_GROUPS.map((group) => {
-              const isGroupOpen = !!openGroups[group];
-              const groupOptions = homeHeroSection.options.filter(
+            {groups.map((group) => {
+              const isGroupOpen = openGroups[group] ?? true;
+              const groupOptions = section.options.filter(
                 (o) => o.group === group
               );
-
               return (
                 <div key={group} className="px-4 py-2">
                   <button
@@ -408,7 +290,7 @@ export function CustomizerPanel() {
                     onClick={() =>
                       setOpenGroups((prev) => ({
                         ...prev,
-                        [group]: !prev[group],
+                        [group]: !isGroupOpen,
                       }))
                     }
                     aria-expanded={isGroupOpen}
@@ -424,277 +306,9 @@ export function CustomizerPanel() {
                       )}
                     />
                   </button>
-
                   {isGroupOpen && (
                     <div className="pb-4 pt-2 space-y-4">
                       {groupOptions.map((opt) => renderOption(opt))}
-
-                      {group === "Slides" && (
-                        <div className="space-y-3">
-                          {heroConfig.slides.map((slide, idx) => (
-                            <div
-                              key={slide.id}
-                              className="p-3 rounded-[12px] bg-sand-100 border border-sand-300 space-y-2.5"
-                            >
-                              {/* Slide Header: checkbox, title label, reorder arrows */}
-                              <div className="flex items-center justify-between gap-2">
-                                <label className="min-h-[44px] flex items-center gap-2 cursor-pointer flex-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={slide.enabled}
-                                    disabled={slide.enabled && enabledCount <= 1}
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        enabled: e.target.checked,
-                                      })
-                                    }
-                                    className="size-4 accent-cocoa-900 cursor-pointer"
-                                  />
-                                  <span className="font-semibold text-[13px] text-cocoa-900">
-                                    {slide.title || slide.id}
-                                  </span>
-                                </label>
-
-                                <div className="flex items-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => moveSlide(idx, -1)}
-                                    disabled={idx === 0}
-                                    aria-label={`Move ${slide.title} up`}
-                                    className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 disabled:opacity-30"
-                                  >
-                                    <ArrowUp size={15} strokeWidth={1.5} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => moveSlide(idx, 1)}
-                                    disabled={idx === heroConfig.slides.length - 1}
-                                    aria-label={`Move ${slide.title} down`}
-                                    className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 disabled:opacity-30"
-                                  >
-                                    <ArrowDown size={15} strokeWidth={1.5} />
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* Slide text & focus fields */}
-                              <div className="space-y-2">
-                                <div>
-                                  <label
-                                    htmlFor={`slide-title-${slide.id}`}
-                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                  >
-                                    Title
-                                  </label>
-                                  <input
-                                    id={`slide-title-${slide.id}`}
-                                    type="text"
-                                    maxLength={80}
-                                    value={slide.title}
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        title: e.target.value.slice(0, 80),
-                                      })
-                                    }
-                                    className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label
-                                    htmlFor={`slide-img-${slide.id}`}
-                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                  >
-                                    Photo
-                                  </label>
-                                  <select
-                                    id={`slide-img-${slide.id}`}
-                                    value={slide.imageKey}
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        imageKey: e.target.value as ImageKey,
-                                      })
-                                    }
-                                    className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                  >
-                                    {HERO_V2_IMAGE_OPTIONS.map((opt) => (
-                                      <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label
-                                      htmlFor={`slide-btn-${slide.id}`}
-                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                    >
-                                      Link 1 text
-                                    </label>
-                                    <input
-                                      id={`slide-btn-${slide.id}`}
-                                      type="text"
-                                      maxLength={80}
-                                      value={slide.link1Text}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          link1Text: e.target.value.slice(0, 80),
-                                        })
-                                      }
-                                      className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label
-                                      htmlFor={`slide-href1-${slide.id}`}
-                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                    >
-                                      Link 1 page
-                                    </label>
-                                    <select
-                                      id={`slide-href1-${slide.id}`}
-                                      value={slide.link1Href}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          link1Href: e.target.value,
-                                        })
-                                      }
-                                      className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                    >
-                                      {HERO_V2_LINK_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                          {opt.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label
-                                      htmlFor={`slide-btn2-${slide.id}`}
-                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                    >
-                                      Link 2 text
-                                    </label>
-                                    <input
-                                      id={`slide-btn2-${slide.id}`}
-                                      type="text"
-                                      maxLength={80}
-                                      placeholder="Optional"
-                                      value={slide.link2Text}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          link2Text: e.target.value.slice(0, 80),
-                                        })
-                                      }
-                                      className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label
-                                      htmlFor={`slide-href2-${slide.id}`}
-                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                    >
-                                      Link 2 page
-                                    </label>
-                                    <select
-                                      id={`slide-href2-${slide.id}`}
-                                      value={slide.link2Href}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          link2Href: e.target.value,
-                                        })
-                                      }
-                                      className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                    >
-                                      {HERO_V2_OPTIONAL_LINK_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                          {opt.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3 pt-1">
-                                  <div>
-                                    <div className="flex justify-between text-[12px] text-cocoa-700">
-                                      <label htmlFor={`slide-fx-${slide.id}`}>
-                                        Focus X
-                                      </label>
-                                      <span>{slide.focusX}%</span>
-                                    </div>
-                                    <input
-                                      id={`slide-fx-${slide.id}`}
-                                      type="range"
-                                      min={0}
-                                      max={100}
-                                      value={slide.focusX}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          focusX: Number(e.target.value),
-                                        })
-                                      }
-                                      className="w-full accent-cocoa-900 cursor-pointer"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <div className="flex justify-between text-[12px] text-cocoa-700">
-                                      <label htmlFor={`slide-fy-${slide.id}`}>
-                                        Focus Y
-                                      </label>
-                                      <span>{slide.focusY}%</span>
-                                    </div>
-                                    <input
-                                      id={`slide-fy-${slide.id}`}
-                                      type="range"
-                                      min={0}
-                                      max={100}
-                                      value={slide.focusY}
-                                      onChange={(e) =>
-                                        updateSlide(idx, {
-                                          focusY: Number(e.target.value),
-                                        })
-                                      }
-                                      className="w-full accent-cocoa-900 cursor-pointer"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <label
-                                    htmlFor={`slide-vid-${slide.id}`}
-                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                  >
-                                    Preview video URL
-                                  </label>
-                                  <input
-                                    id={`slide-vid-${slide.id}`}
-                                    type="text"
-                                    maxLength={80}
-                                    value={slide.previewVideoUrl}
-                                    placeholder="/videos/clip.mp4"
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        previewVideoUrl: e.target.value.slice(
-                                          0,
-                                          80
-                                        ),
-                                      })
-                                    }
-                                    className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -702,17 +316,16 @@ export function CustomizerPanel() {
             })}
           </div>
 
-          {/* Inline Reset Confirmation */}
           {confirmReset && (
             <div className="px-4 py-3 bg-blush-100 border-t border-sand-300 flex items-center justify-between gap-2 shrink-0">
               <span className="text-[13px] font-medium text-cocoa-900">
-                Reset all hero settings?
+                Reset settings?
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    resetConfig("home-hero");
+                    resetConfig(section.id);
                     setConfirmReset(false);
                   }}
                   className="min-h-[36px] px-3 rounded-pill bg-cocoa-900 text-cream-50 text-xs font-semibold"
@@ -730,7 +343,6 @@ export function CustomizerPanel() {
             </div>
           )}
 
-          {/* Footer Actions */}
           <div className="p-3 border-t border-sand-300 bg-sand-100 space-y-2 shrink-0">
             {copiedMsg && (
               <p
@@ -745,7 +357,7 @@ export function CustomizerPanel() {
               <button
                 type="button"
                 onClick={() => setShowPhonePreview((prev) => !prev)}
-                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 hover:bg-sand-300/30"
+                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <Smartphone size={15} strokeWidth={1.5} />
                 <span>Phone preview</span>
@@ -754,7 +366,7 @@ export function CustomizerPanel() {
               <button
                 type="button"
                 onClick={() => setConfirmReset(true)}
-                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 hover:bg-sand-300/30"
+                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <RotateCcw size={15} strokeWidth={1.5} />
                 <span>Reset</span>
@@ -763,7 +375,7 @@ export function CustomizerPanel() {
               <button
                 type="button"
                 onClick={handleCopyShareLink}
-                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 hover:bg-sand-300/30"
+                className="min-h-[44px] px-3 rounded-pill border border-sand-300 bg-cream-50 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <Share2 size={15} strokeWidth={1.5} />
                 <span>Share link</span>
@@ -772,7 +384,7 @@ export function CustomizerPanel() {
               <button
                 type="button"
                 onClick={handleCopySettings}
-                className="min-h-[44px] px-3 rounded-pill bg-cocoa-900 text-cream-50 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 hover:bg-cocoa-700"
+                className="min-h-[44px] px-3 rounded-pill bg-cocoa-900 text-cream-50 text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <Copy size={15} strokeWidth={1.5} />
                 <span>Copy settings</span>
