@@ -7,9 +7,12 @@ export interface WorldConfig {
   paragraph: string;
   highlightWords: string;
   closing: string;
-  titleSizeDesktop: number;
-  titleSizeMobile: number;
+  eyebrowSizeDesktop: number;
+  eyebrowSizeMobile: number;
+  logoWidthDesktop: number;
+  logoWidthMobile: number;
   bodySize: number;
+  paragraphMaxWidthRem: number;
   background: WorldBg;
   weaveStrength: number;
   grainStrength: number;
@@ -29,22 +32,25 @@ export interface WorldConfig {
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
-  title: "THE WORLD OF COCOMISHRI",
+  title: "THE WORLD OF",
   subtitle: "Little Ones. Thoughtfully Dressed.",
   paragraph:
     "At Cocomishri, we believe childhood deserves a little extra thought. Inspired by life's little moments, we create comfortable, timeless clothing with carefully chosen fabrics, considered details, and playful designs. Because childhood isn't about dressing up. It's about feeling free to explore, play, dream, and grow.",
   highlightWords: "explore, play, dream, grow",
   closing: "Made with care. Created for little adventures.",
-  titleSizeDesktop: 64,
-  titleSizeMobile: 34,
+  eyebrowSizeDesktop: 30,
+  eyebrowSizeMobile: 18,
+  logoWidthDesktop: 560,
+  logoWidthMobile: 315,
   bodySize: 17,
+  paragraphMaxWidthRem: 54,
   background: "fabric",
   weaveStrength: 100,
   grainStrength: 100,
   sectionPadding: 112,
   watermarkOn: true,
   watermarkOpacity: 0.08,
-  watermarkSize: 600,
+  watermarkSize: 720,
   watermarkOffsetY: 0,
   animationOn: true,
   speed: "normal",
@@ -108,9 +114,17 @@ export function validateWorldConfig(raw: unknown): WorldConfig {
     paragraph: clampText(obj.paragraph, def.paragraph, 500),
     highlightWords: clampText(obj.highlightWords, def.highlightWords, 120),
     closing: clampText(obj.closing, def.closing, 80),
-    titleSizeDesktop: clampInt(obj.titleSizeDesktop, 40, 80, def.titleSizeDesktop),
-    titleSizeMobile: clampInt(obj.titleSizeMobile, 28, 48, def.titleSizeMobile),
+    eyebrowSizeDesktop: clampInt(obj.eyebrowSizeDesktop, 20, 40, def.eyebrowSizeDesktop),
+    eyebrowSizeMobile: clampInt(obj.eyebrowSizeMobile, 14, 24, def.eyebrowSizeMobile),
+    logoWidthDesktop: clampInt(obj.logoWidthDesktop, 360, 720, def.logoWidthDesktop),
+    logoWidthMobile: clampInt(obj.logoWidthMobile, 220, 360, def.logoWidthMobile),
     bodySize: clampInt(obj.bodySize, 14, 18, def.bodySize),
+    paragraphMaxWidthRem: clampInt(
+      obj.paragraphMaxWidthRem,
+      40,
+      64,
+      def.paragraphMaxWidthRem
+    ),
     background: pickChoice(
       obj.background,
       ["fabric", "cream-50", "sand-100"] as const,

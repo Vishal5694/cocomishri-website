@@ -137,8 +137,6 @@ export function WorldOfCocomishri() {
   const baseBgHex = cfg.background === "cream-50" ? "#FCF8F2" : "#F4EADD";
   const weaveMult = cfg.weaveStrength / 100;
   const grainOpacity = 0.06 * (cfg.grainStrength / 100);
-  const useDefaultClampTitle =
-    cfg.titleSizeDesktop === 64 && cfg.titleSizeMobile === 34;
 
   return (
     <section
@@ -304,42 +302,61 @@ export function WorldOfCocomishri() {
       )}
 
       {/* Text Content */}
-      <div className="relative z-10 mx-auto max-w-3xl flex flex-col items-center">
-        {/* Title (h2) */}
+      <div className="relative z-10 mx-auto max-w-5xl flex flex-col items-center">
+        {/* Title (h2 = "THE WORLD OF" + real Cocomishri wordmark logo) */}
         <h2
           id="world-heading"
-          style={
-            useDefaultClampTitle
-              ? { fontSize: "clamp(34px, 6vw, 64px)" }
-              : ({
-                  "--w-t-d": `${cfg.titleSizeDesktop}px`,
-                  "--w-t-m": `${cfg.titleSizeMobile}px`,
-                } as React.CSSProperties)
-          }
-          className={cn(
-            "font-heading [font-variation-settings:'SOFT'_75] font-medium text-cocoa-900 tracking-[0.04em] leading-[1.05] max-w-[14ch] sm:max-w-none",
-            !useDefaultClampTitle &&
-              "text-[length:var(--w-t-m)] lg:text-[length:var(--w-t-d)]"
-          )}
+          className="flex flex-col items-center"
         >
-          {titleWords.map((word, idx) => (
-            <React.Fragment key={`wt-${idx}`}>
-              <span
-                className="inline-block"
-                style={{
-                  opacity: isArmed ? 0 : 1,
-                  transform: isArmed ? "translateY(14px)" : "translateY(0)",
-                  transition:
-                    isPlaying && !reducedMotion
-                      ? `opacity ${ms(800)} ease ${ms(100 + idx * 140)}, transform ${ms(800)} ease ${ms(100 + idx * 140)}`
-                      : undefined,
-                }}
-              >
-                {word}
-              </span>
-              {idx < titleWords.length - 1 && " "}
-            </React.Fragment>
-          ))}
+          <span
+            style={
+              {
+                "--w-eb-d": `${cfg.eyebrowSizeDesktop}px`,
+                "--w-eb-m": `${cfg.eyebrowSizeMobile}px`,
+              } as React.CSSProperties
+            }
+            className="block font-heading [font-variation-settings:'SOFT'_75] font-medium text-cocoa-900 tracking-[0.18em] leading-[1.1] mb-[10px] text-[length:var(--w-eb-m)] lg:text-[length:var(--w-eb-d)]"
+          >
+            {titleWords.map((word, idx) => (
+              <React.Fragment key={`wt-${idx}`}>
+                <span
+                  className="inline-block"
+                  style={{
+                    opacity: isArmed ? 0 : 1,
+                    transform: isArmed ? "translateY(14px)" : "translateY(0)",
+                    transition:
+                      isPlaying && !reducedMotion
+                        ? `opacity ${ms(800)} ease ${ms(100 + idx * 140)}, transform ${ms(800)} ease ${ms(100 + idx * 140)}`
+                        : undefined,
+                  }}
+                >
+                  {word}
+                </span>
+                {idx < titleWords.length - 1 && " "}
+              </React.Fragment>
+            ))}
+          </span>
+
+          <img
+            src={asset("/brand/wordmark.svg")}
+            alt="Cocomishri"
+            width={573}
+            height={137}
+            decoding="async"
+            style={
+              {
+                "--w-logo-d": `min(${cfg.logoWidthDesktop}px, 84vw)`,
+                "--w-logo-m": `min(${cfg.logoWidthMobile}px, 84vw)`,
+                opacity: isArmed ? 0 : 1,
+                transform: isArmed ? "scale(0.96)" : "scale(1)",
+                transition:
+                  isPlaying && !reducedMotion
+                    ? `opacity ${ms(900)} ease-out ${ms(450)}, transform ${ms(900)} ease-out ${ms(450)}`
+                    : undefined,
+              } as React.CSSProperties
+            }
+            className="block mx-auto h-auto w-[var(--w-logo-m)] lg:w-[var(--w-logo-d)]"
+          />
         </h2>
 
         {/* Subtitle */}
@@ -404,9 +421,10 @@ export function WorldOfCocomishri() {
             {
               "--w-body-d": `${cfg.bodySize}px`,
               "--w-body-m": `${Math.max(14, cfg.bodySize - 2)}px`,
+              "--w-p-max": `${cfg.paragraphMaxWidthRem}rem`,
             } as React.CSSProperties
           }
-          className="max-w-[40rem] mb-7 font-body font-normal leading-[1.8] text-cocoa-700 text-[length:var(--w-body-m)] lg:text-[length:var(--w-body-d)]"
+          className="w-full md:max-w-[44rem] lg:max-w-[var(--w-p-max)] mb-7 font-body font-normal leading-[1.8] text-cocoa-700 text-[length:var(--w-body-m)] lg:text-[length:var(--w-body-d)]"
         >
           {bodyWords.map((token, wIdx) => {
             const wordDelay = 1700 + wIdx * 28;
@@ -433,7 +451,7 @@ export function WorldOfCocomishri() {
                 >
                   {isHighlighted ? (
                     <><span
-                      className="text-cocoa-900 font-semibold px-1"
+                      className="text-cocoa-900 font-semibold px-[1px]"
                       style={{
                         backgroundImage:
                           "linear-gradient(to top, #F8E6DF 45%, transparent 45%)",
