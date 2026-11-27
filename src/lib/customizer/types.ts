@@ -1,14 +1,8 @@
 export type OptionGroup =
-  | "Layout"
-  | "Banners"
-  | "Slides"
-  | "Text"
-  | "Button"
-  | "Overlays"
-  | "Links"
-  | "Motion"
-  | "Controls"
-  | "Photos";
+  | "Copy"
+  | "Typography & layout"
+  | "Animation"
+  | "Mascot";
 
 export type Option =
   | {

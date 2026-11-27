@@ -1,136 +1,129 @@
 import {
-  DEFAULT_CAMPAIGN_CONFIG,
-  validateCampaignConfig,
-  type CampaignBannersConfig,
-} from "@/lib/campaign-banners-config";
+  DEFAULT_WORLD_CONFIG,
+  validateWorldConfig,
+  type WorldConfig,
+} from "@/lib/world-config";
 import type { Section } from "./types";
 
-export const campaignBannersSection: Section<CampaignBannersConfig> = {
-  id: "campaign-banners",
-  title: "Campaign banners",
-  defaults: DEFAULT_CAMPAIGN_CONFIG,
-  validate: validateCampaignConfig,
+export const worldOfCocomishriSection: Section<WorldConfig> = {
+  id: "world-of-cocomishri",
+  title: "World of Cocomishri",
+  defaults: DEFAULT_WORLD_CONFIG,
+  validate: validateWorldConfig,
   options: [
-    // Layout
+    // Copy
+    { kind: "text", key: "eyebrow", label: "Eyebrow", group: "Copy", maxLength: 40 },
+    { kind: "text", key: "headingLine1", label: "Heading line 1", group: "Copy", maxLength: 40 },
+    { kind: "text", key: "headingLine2", label: "Heading line 2", group: "Copy", maxLength: 40 },
+    { kind: "text", key: "lead", label: "Lead line", group: "Copy", maxLength: 120 },
+    { kind: "text", key: "body1", label: "Body paragraph 1", group: "Copy", maxLength: 280 },
+    { kind: "text", key: "body2", label: "Body paragraph 2", group: "Copy", maxLength: 280 },
+    { kind: "text", key: "body3", label: "Body paragraph 3", group: "Copy", maxLength: 280 },
     {
-      kind: "choice",
-      key: "height",
-      label: "Banner height",
-      group: "Layout",
-      choices: [
-        { value: "full", label: "Full screen (100svh)" },
-        { value: "85", label: "85% height" },
-        { value: "70", label: "70% height" },
-      ],
+      kind: "text",
+      key: "highlightWords",
+      label: "Highlight words (comma-separated)",
+      group: "Copy",
+      maxLength: 120,
     },
-    {
-      kind: "choice",
-      key: "mediaType",
-      label: "Media",
-      group: "Layout",
-      choices: [
-        { value: "photo", label: "Photos" },
-        { value: "video", label: "Video (with photo fallback)" },
-      ],
-    },
-    {
-      kind: "choice",
-      key: "gapPx",
-      label: "Gap between banners",
-      group: "Layout",
-      choices: [
-        { value: "0", label: "0px" },
-        { value: "4", label: "4px" },
-        { value: "8", label: "8px" },
-        { value: "16", label: "16px" },
-      ],
-    },
-    {
-      kind: "toggle",
-      key: "gapTop",
-      label: "Gap above first banner",
-      group: "Layout",
-    },
+    { kind: "text", key: "closing", label: "Closing line", group: "Copy", maxLength: 80 },
 
-    // Text
-    {
-      kind: "choice",
-      key: "textPosition",
-      label: "Text position",
-      group: "Text",
-      choices: [
-        { value: "centre", label: "Centre" },
-        { value: "bottom-centre", label: "Bottom centre" },
-        { value: "bottom-left", label: "Bottom left" },
-      ],
-    },
+    // Typography & layout
     {
       kind: "range",
-      key: "titleSizeDesktop",
-      label: "Title size (desktop)",
-      group: "Text",
-      min: 32,
-      max: 72,
+      key: "headingSizeDesktop",
+      label: "Heading size (desktop)",
+      group: "Typography & layout",
+      min: 28,
+      max: 56,
       step: 2,
       unit: "px",
     },
     {
       kind: "range",
-      key: "titleSizeMobile",
-      label: "Title size (phone)",
-      group: "Text",
-      min: 24,
-      max: 48,
+      key: "headingSizeMobile",
+      label: "Heading size (phone)",
+      group: "Typography & layout",
+      min: 22,
+      max: 40,
       step: 2,
       unit: "px",
     },
     {
       kind: "range",
-      key: "textOffsetY",
-      label: "Text vertical offset",
-      group: "Text",
-      min: -20,
-      max: 20,
-      step: 2,
-      unit: "%",
+      key: "bodySize",
+      label: "Body size",
+      group: "Typography & layout",
+      min: 14,
+      max: 18,
+      step: 1,
+      unit: "px",
     },
-
-    // Button
     {
       kind: "choice",
-      key: "buttonStyle",
-      label: "Button style",
-      group: "Button",
+      key: "background",
+      label: "Background",
+      group: "Typography & layout",
       choices: [
-        { value: "outline", label: "Outline cream" },
-        { value: "solid", label: "Solid cream" },
-        { value: "link", label: "Underlined link" },
+        { value: "cream-50", label: "Cream (#FCF8F2)" },
+        { value: "sand-100", label: "Sand (#F4EADD)" },
+        { value: "blush-100", label: "Blush (#F8E6DF)" },
+        { value: "caramel-100", label: "Caramel (#F7E8D8)" },
       ],
     },
+    {
+      kind: "range",
+      key: "sectionPadding",
+      label: "Section padding (desktop)",
+      group: "Typography & layout",
+      min: 48,
+      max: 144,
+      step: 8,
+      unit: "px",
+    },
 
-    // Overlays
+    // Animation
+    { kind: "toggle", key: "animationOn", label: "Animation", group: "Animation" },
+    {
+      kind: "choice",
+      key: "speed",
+      label: "Speed",
+      group: "Animation",
+      choices: [
+        { value: "slow", label: "Slow (×1.5)" },
+        { value: "normal", label: "Normal" },
+        { value: "fast", label: "Fast (×0.7)" },
+      ],
+    },
+    { kind: "toggle", key: "inkOn", label: "Ink-in effect", group: "Animation" },
+    { kind: "toggle", key: "stitchOn", label: "Stitch line", group: "Animation" },
+    { kind: "toggle", key: "crystalsOn", label: "Floating crystals", group: "Animation" },
+
+    // Mascot
+    { kind: "toggle", key: "mascotOn", label: "Show mascot", group: "Mascot" },
     {
       kind: "range",
-      key: "bottomGradient",
-      label: "Bottom gradient strength",
-      group: "Overlays",
-      min: 0,
-      max: 80,
-      step: 5,
-      unit: "%",
+      key: "mascotWidth",
+      label: "Mascot width (desktop)",
+      group: "Mascot",
+      min: 80,
+      max: 200,
+      step: 4,
+      unit: "px",
     },
     {
-      kind: "range",
-      key: "centreGlow",
-      label: "Centre glow strength",
-      group: "Overlays",
-      min: 0,
-      max: 60,
-      step: 5,
-      unit: "%",
+      kind: "choice",
+      key: "mascotPosition",
+      label: "Mascot position",
+      group: "Mascot",
+      choices: [
+        { value: "below", label: "Below closing" },
+        { value: "above", label: "Above eyebrow" },
+      ],
     },
+    { kind: "toggle", key: "mascotBreathing", label: "Mascot breathing", group: "Mascot" },
   ],
 };
 
-export const customizerSections = [campaignBannersSection] as const;
+export const customizerSections = [worldOfCocomishriSection] as const;
 export type SectionId = (typeof customizerSections)[number]["id"];

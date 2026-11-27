@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Share2,
   Copy,
+  Play,
 } from "lucide-react";
 import { customizerSections, type SectionId } from "@/lib/customizer/registry";
 import type { Option } from "@/lib/customizer/types";
@@ -16,15 +17,6 @@ import {
   useCustomizer,
   encodeBase64Utf8,
 } from "@/lib/customizer/CustomizerContext";
-import { useDepartment } from "@/lib/department/DepartmentContext";
-import { departments, type DepartmentId } from "@/lib/navigation";
-import {
-  CAMPAIGN_IMAGE_OPTIONS,
-  CAMPAIGN_LINK_OPTIONS,
-  type CampaignBannerItem,
-  type CampaignBannersConfig,
-} from "@/lib/campaign-banners-config";
-import type { ImageKey } from "@/lib/images";
 import { PhonePreview } from "./PhonePreview";
 import { cn } from "@/lib/utils";
 
@@ -50,39 +42,24 @@ function buildSummary(
     }
   }
 
-  if (sectionId === "campaign-banners") {
-    const cb = config as unknown as CampaignBannersConfig;
-    lines.push("", "Banners by department:");
-    for (const d of departments) {
-      lines.push(`- ${d.label} (${d.id}):`);
-      cb.departments[d.id]?.forEach((b, i) => {
-        lines.push(
-          `  ${i + 1}. "${b.title}" | btn="${b.buttonText}" (${b.href}) | img=${b.imageKey} (${b.focusX}% ${b.focusY}%) | phone=${b.phoneImageKey} (${b.phoneFocusX}% ${b.phoneFocusY}%)${b.videoSrc ? ` | video=${b.videoSrc}` : ""}`
-        );
-      });
-    }
-  }
-
   lines.push("", "JSON:", JSON.stringify(config, null, 2));
   return lines.join("\n");
 }
 
 export function CustomizerPanel() {
   const { configs, updateConfig, resetConfig } = useCustomizer();
-  const { department, setDepartment } = useDepartment();
   const [activeSection, setActiveSection] = React.useState<SectionId>(
-    customizerSections[0]?.id ?? "campaign-banners"
+    customizerSections[0]?.id ?? "world-of-cocomishri"
   );
   const [isOpen, setIsOpen] = React.useState(false);
   const [showPhonePreview, setShowPhonePreview] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
   const [copiedMsg, setCopiedMsg] = React.useState<string | null>(null);
   const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
-    Banners: true,
-    Layout: true,
-    Text: false,
-    Button: false,
-    Overlays: false,
+    Copy: false,
+    "Typography & layout": true,
+    Animation: true,
+    Mascot: false,
   });
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -161,28 +138,7 @@ export function CustomizerPanel() {
   };
 
   const setField = (key: string, value: unknown) => {
-    const parsedVal = key === "gapPx" ? Number(value) : value;
-    updateConfig(section.id, { ...currentConfig, [key]: parsedVal });
-  };
-
-  const updateDeptBanner = (
-    dept: DepartmentId,
-    idx: 0 | 1,
-    patch: Partial<CampaignBannerItem>
-  ) => {
-    const cb = currentConfig as unknown as CampaignBannersConfig;
-    const pair = cb.departments[dept];
-    const nextPair: [CampaignBannerItem, CampaignBannerItem] = [
-      idx === 0 ? { ...pair[0], ...patch } : pair[0],
-      idx === 1 ? { ...pair[1], ...patch } : pair[1],
-    ];
-    updateConfig(section.id, {
-      ...cb,
-      departments: {
-        ...cb.departments,
-        [dept]: nextPair,
-      },
-    });
+    updateConfig(section.id, { ...currentConfig, [key]: value });
   };
 
   const renderOption = (opt: Option) => {
@@ -282,12 +238,6 @@ export function CustomizerPanel() {
     return null;
   };
 
-  const cbConfig =
-    section.id === "campaign-banners"
-      ? (currentConfig as unknown as CampaignBannersConfig)
-      : null;
-  const activeDeptBanners = cbConfig?.departments[department];
-
   return (
     <>
       {!isOpen && (
@@ -313,59 +263,28 @@ export function CustomizerPanel() {
           aria-label="Section Customizer"
           className="fixed inset-y-0 left-0 z-50 w-full sm:w-[380px] bg-cream-50 text-cocoa-900 border-r border-sand-300 shadow-2xl flex flex-col font-body text-[14px]"
         >
-          <div className="px-4 py-3 border-b border-sand-300 bg-sand-100 space-y-2.5 shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-cocoa-700">
-                  Section Customizer
-                </p>
-                <h2 className="font-heading text-lg font-medium text-cocoa-900 leading-tight">
-                  {section.title}
-                </h2>
-              </div>
-
-              <button
-                ref={closeBtnRef}
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  triggerRef.current?.focus();
-                }}
-                aria-label="Close customizer"
-                className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors"
-              >
-                <X size={20} strokeWidth={1.5} />
-              </button>
+          <div className="px-4 py-3 border-b border-sand-300 bg-sand-100 flex items-center justify-between shrink-0">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-cocoa-700">
+                Section Customizer
+              </p>
+              <h2 className="font-heading text-lg font-medium text-cocoa-900 leading-tight">
+                {section.title}
+              </h2>
             </div>
 
-            {section.id === "campaign-banners" && (
-              <div
-                role="tablist"
-                aria-label="Department preview"
-                className="grid grid-cols-2 gap-1 p-1 rounded-[12px] bg-cream-50 border border-sand-300"
-              >
-                {departments.map((d) => {
-                  const selected = department === d.id;
-                  return (
-                    <button
-                      key={d.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={selected}
-                      onClick={() => setDepartment(d.id)}
-                      className={cn(
-                        "min-h-[34px] px-2 rounded-pill text-[11px] font-semibold transition-colors",
-                        selected
-                          ? "bg-cocoa-900 text-cream-50"
-                          : "text-cocoa-700 hover:text-cocoa-900"
-                      )}
-                    >
-                      {d.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            <button
+              ref={closeBtnRef}
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                triggerRef.current?.focus();
+              }}
+              aria-label="Close customizer"
+              className="size-11 flex items-center justify-center rounded-pill text-cocoa-900 hover:bg-sand-300/40 transition-colors"
+            >
+              <X size={20} strokeWidth={1.5} />
+            </button>
           </div>
 
           {(customizerSections as readonly unknown[]).length > 1 && (
@@ -389,275 +308,6 @@ export function CustomizerPanel() {
           )}
 
           <div className="flex-1 overflow-y-auto divide-y divide-sand-300">
-            {activeDeptBanners && (
-              <div className="px-4 py-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenGroups((prev) => ({
-                      ...prev,
-                      Banners: !(prev.Banners ?? true),
-                    }))
-                  }
-                  aria-expanded={openGroups.Banners ?? true}
-                  className="w-full min-h-[44px] flex items-center justify-between text-[13px] font-semibold uppercase tracking-[0.06em] text-cocoa-900 text-left"
-                >
-                  <span>Banners ({department})</span>
-                  <ChevronDown
-                    size={16}
-                    strokeWidth={1.5}
-                    className={cn(
-                      "transition-transform duration-200",
-                      (openGroups.Banners ?? true) && "rotate-180"
-                    )}
-                  />
-                </button>
-                {(openGroups.Banners ?? true) && (
-                  <div className="pb-4 pt-2 space-y-3">
-                    {activeDeptBanners.map((b, idx) => {
-                      const bIdx = idx as 0 | 1;
-                      return (
-                        <div
-                          key={`${department}-${b.id}`}
-                          className="p-3 rounded-[12px] bg-sand-100 border border-sand-300 space-y-2.5"
-                        >
-                          <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-cocoa-700">
-                            Banner {idx + 1}
-                          </p>
-                          <div>
-                            <label
-                              htmlFor={`cb-title-${b.id}`}
-                              className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                            >
-                              Title
-                            </label>
-                            <input
-                              id={`cb-title-${b.id}`}
-                              type="text"
-                              maxLength={80}
-                              value={b.title}
-                              onChange={(e) =>
-                                updateDeptBanner(department, bIdx, {
-                                  title: e.target.value.slice(0, 80),
-                                })
-                              }
-                              className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label
-                                htmlFor={`cb-btn-${b.id}`}
-                                className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                              >
-                                Button text
-                              </label>
-                              <input
-                                id={`cb-btn-${b.id}`}
-                                type="text"
-                                maxLength={30}
-                                value={b.buttonText}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    buttonText: e.target.value.slice(0, 30),
-                                  })
-                                }
-                                className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                              />
-                            </div>
-                            <div>
-                              <label
-                                htmlFor={`cb-href-${b.id}`}
-                                className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                              >
-                                Link
-                              </label>
-                              <select
-                                id={`cb-href-${b.id}`}
-                                value={b.href}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    href: e.target.value,
-                                  })
-                                }
-                                className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                              >
-                                {CAMPAIGN_LINK_OPTIONS.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label
-                                htmlFor={`cb-img-${b.id}`}
-                                className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                              >
-                                Desktop image
-                              </label>
-                              <select
-                                id={`cb-img-${b.id}`}
-                                value={b.imageKey}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    imageKey: e.target.value as ImageKey,
-                                  })
-                                }
-                                className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[12px] text-cocoa-900"
-                              >
-                                {CAMPAIGN_IMAGE_OPTIONS.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label
-                                htmlFor={`cb-pimg-${b.id}`}
-                                className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                              >
-                                Phone image
-                              </label>
-                              <select
-                                id={`cb-pimg-${b.id}`}
-                                value={b.phoneImageKey}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    phoneImageKey: e.target.value as ImageKey,
-                                  })
-                                }
-                                className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[12px] text-cocoa-900"
-                              >
-                                {CAMPAIGN_IMAGE_OPTIONS.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <div className="flex justify-between text-[11px] text-cocoa-700">
-                                <label htmlFor={`cb-fx-${b.id}`}>Focus X</label>
-                                <span>{b.focusX}%</span>
-                              </div>
-                              <input
-                                id={`cb-fx-${b.id}`}
-                                type="range"
-                                min={0}
-                                max={100}
-                                value={b.focusX}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    focusX: Number(e.target.value),
-                                  })
-                                }
-                                className="w-full accent-cocoa-900 cursor-pointer"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-[11px] text-cocoa-700">
-                                <label htmlFor={`cb-fy-${b.id}`}>Focus Y</label>
-                                <span>{b.focusY}%</span>
-                              </div>
-                              <input
-                                id={`cb-fy-${b.id}`}
-                                type="range"
-                                min={0}
-                                max={100}
-                                value={b.focusY}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    focusY: Number(e.target.value),
-                                  })
-                                }
-                                className="w-full accent-cocoa-900 cursor-pointer"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <div className="flex justify-between text-[11px] text-cocoa-700">
-                                <label htmlFor={`cb-pfx-${b.id}`}>
-                                  Phone X
-                                </label>
-                                <span>{b.phoneFocusX}%</span>
-                              </div>
-                              <input
-                                id={`cb-pfx-${b.id}`}
-                                type="range"
-                                min={0}
-                                max={100}
-                                value={b.phoneFocusX}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    phoneFocusX: Number(e.target.value),
-                                  })
-                                }
-                                className="w-full accent-cocoa-900 cursor-pointer"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-[11px] text-cocoa-700">
-                                <label htmlFor={`cb-pfy-${b.id}`}>
-                                  Phone Y
-                                </label>
-                                <span>{b.phoneFocusY}%</span>
-                              </div>
-                              <input
-                                id={`cb-pfy-${b.id}`}
-                                type="range"
-                                min={0}
-                                max={100}
-                                value={b.phoneFocusY}
-                                onChange={(e) =>
-                                  updateDeptBanner(department, bIdx, {
-                                    phoneFocusY: Number(e.target.value),
-                                  })
-                                }
-                                className="w-full accent-cocoa-900 cursor-pointer"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor={`cb-vid-${b.id}`}
-                              className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                            >
-                              Preview video URL
-                            </label>
-                            <input
-                              id={`cb-vid-${b.id}`}
-                              type="text"
-                              maxLength={120}
-                              value={b.videoSrc}
-                              placeholder="/videos/banner.mp4"
-                              onChange={(e) =>
-                                updateDeptBanner(department, bIdx, {
-                                  videoSrc: e.target.value.slice(0, 120),
-                                })
-                              }
-                              className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
             {groups.map((group) => {
               const isGroupOpen = openGroups[group] ?? false;
               const groupOptions = section.options.filter(
@@ -689,6 +339,22 @@ export function CustomizerPanel() {
                   {isGroupOpen && (
                     <div className="pb-4 pt-2 space-y-4">
                       {groupOptions.map((opt) => renderOption(opt))}
+
+                      {section.id === "world-of-cocomishri" &&
+                        group === "Animation" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.dispatchEvent(
+                                new CustomEvent("cm-world-replay")
+                              )
+                            }
+                            className="w-full min-h-[44px] px-4 rounded-pill border border-cocoa-900 text-cocoa-900 text-[13px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-sand-100 transition-colors"
+                          >
+                            <Play size={14} strokeWidth={1.75} />
+                            <span>Replay animation</span>
+                          </button>
+                        )}
                     </div>
                   )}
                 </div>
