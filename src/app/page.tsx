@@ -5,6 +5,7 @@ import { Truck, Eye, RotateCcw, Feather } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandImage } from "@/components/ui/BrandImage";
 import { HeroSliderV2, type HeroSlideData } from "@/components/v2/HeroSliderV2";
+import { CampaignBanners } from "@/components/home/CampaignBanners";
 import { Carousel } from "@/components/ui/Carousel";
 import { Section } from "@/components/ui/Section";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -160,6 +161,9 @@ export default function HomePage() {
         headingText="Sweet like Mishri. Soft like a hug."
         useCustomizerConfig
       />
+
+      {/* 2.1b Department Campaign Banners */}
+      <CampaignBanners />
 
       {/* 2.2 New in — product carousel (bg cream-50) */}
       <Section bg="cream-50">

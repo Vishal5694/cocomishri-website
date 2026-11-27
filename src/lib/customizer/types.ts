@@ -1,7 +1,10 @@
 export type OptionGroup =
   | "Layout"
+  | "Banners"
   | "Slides"
   | "Text"
+  | "Button"
+  | "Overlays"
   | "Links"
   | "Motion"
   | "Controls"
