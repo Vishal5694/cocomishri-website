@@ -20,11 +20,13 @@ import {
   encodeBase64Utf8,
 } from "@/lib/customizer/CustomizerContext";
 import {
+  HERO_V2_IMAGE_OPTIONS,
   HERO_V2_LINK_OPTIONS,
   HERO_V2_OPTIONAL_LINK_OPTIONS,
   type HeroV2Config,
   type HeroV2SlideSetting,
 } from "@/lib/hero-v2-config";
+import type { ImageKey } from "@/lib/images";
 import { PhonePreview } from "./PhonePreview";
 import { cn } from "@/lib/utils";
 
@@ -496,6 +498,31 @@ export function CustomizerPanel() {
                                     }
                                     className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
                                   />
+                                </div>
+
+                                <div>
+                                  <label
+                                    htmlFor={`slide-img-${slide.id}`}
+                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
+                                  >
+                                    Photo
+                                  </label>
+                                  <select
+                                    id={`slide-img-${slide.id}`}
+                                    value={slide.imageKey}
+                                    onChange={(e) =>
+                                      updateSlide(idx, {
+                                        imageKey: e.target.value as ImageKey,
+                                      })
+                                    }
+                                    className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
+                                  >
+                                    {HERO_V2_IMAGE_OPTIONS.map((opt) => (
+                                      <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </option>
+                                    ))}
+                                  </select>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2">

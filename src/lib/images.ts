@@ -296,6 +296,34 @@ export const images = {
     shot: "Everyday comfort, landscape",
     ratio: "16/9",
   },
+  "hero-sweet": {
+    src: "",
+    sampleSrc: u("1600377202759-e783ff47dff7"),
+    alt: "A mother hugging her toddler by the sea at sunset",
+    shot: "Mother hugging toddler by sea at sunset",
+    ratio: "16/9",
+  },
+  "hero-moments": {
+    src: "",
+    sampleSrc: u("1515563562861-4d2514edb3e3"),
+    alt: "A little girl in a white dress holding wildflowers",
+    shot: "Girl in white dress holding wildflowers",
+    ratio: "16/9",
+  },
+  "hero-dreams": {
+    src: "",
+    sampleSrc: u("1595762336539-66770550bcad"),
+    alt: "A toddler sitting in a field at sunset with a flower basket",
+    shot: "Toddler in field at sunset with flower basket",
+    ratio: "16/9",
+  },
+  "hero-thread": {
+    src: "",
+    sampleSrc: u("1773243086631-962baefccd8a"),
+    alt: "A newborn sleeping in a cream knit romper on a knit blanket",
+    shot: "Newborn sleeping in cream knit romper",
+    ratio: "16/9",
+  },
 } as const satisfies Record<string, ImageEntry>;
 
 export type ImageKey = keyof typeof images;

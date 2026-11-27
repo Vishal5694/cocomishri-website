@@ -19,6 +19,28 @@ export const HERO_V2_OPTIONAL_LINK_OPTIONS = [
   ...HERO_V2_LINK_OPTIONS,
 ] as const;
 
+export const HERO_V2_IMAGE_OPTIONS: { value: ImageKey; label: string }[] = [
+  { value: "hero-sweet", label: "Hero: Sweet (sea at sunset)" },
+  { value: "hero-moments", label: "Hero: Moments (wildflowers)" },
+  { value: "hero-dreams", label: "Hero: Dreams (flower basket)" },
+  { value: "hero-thread", label: "Hero: Thread (newborn knit)" },
+  { value: "hero-desktop", label: "v2 Slide 1 (mother & baby)" },
+  { value: "v2-slide-2", label: "v2 Slide 2 (window daylight)" },
+  { value: "v2-slide-3", label: "v2 Slide 3 (smiling baby)" },
+  { value: "hero-baby-toddler", label: "Baby + Toddler" },
+  { value: "hero-girls", label: "Girls" },
+  { value: "hero-boys", label: "Boys" },
+  { value: "hero-gifting", label: "Gifting" },
+  { value: "hero-everyday", label: "Everyday comfort" },
+  { value: "occasion-naming-ceremony", label: "Naming Ceremony Edit" },
+  { value: "product-1", label: "New in" },
+  { value: "occasion-festive", label: "Festive" },
+  { value: "occasion-first-birthday", label: "First birthday" },
+  { value: "story-hero", label: "Our story" },
+];
+
+const ALLOWED_IMAGE_KEYS: readonly string[] = HERO_V2_IMAGE_OPTIONS.map((o) => o.value);
+
 const ALLOWED_HREFS: readonly string[] = HERO_V2_LINK_OPTIONS.map((o) => o.value);
 const ALLOWED_OPTIONAL_HREFS: readonly string[] = HERO_V2_OPTIONAL_LINK_OPTIONS.map((o) => o.value);
 
@@ -140,37 +162,42 @@ export const AVAILABLE_HERO_V2_SLIDES: HeroV2SlideMeta[] = [
   {
     id: "slide-1",
     title: "Sweet like Mishri. Soft like a hug.",
-    imageKey: "hero-desktop",
-    mobileImageKey: "hero-mobile",
+    imageKey: "hero-sweet",
     defaultEnabled: true,
     link1Text: "New arrivals",
     link1Href: "/collections/baby-new-in",
-    link2Text: "Discover more",
-    link2Href: "/shop",
-    focusX: 50,
-    focusY: 50,
+    focusX: 45,
+    focusY: 40,
   },
   {
     id: "slide-2",
     title: "Made for little moments. Loved for a lifetime.",
-    imageKey: "v2-slide-2",
-    mobileImageKey: "occasion-naming-ceremony",
+    imageKey: "hero-moments",
     defaultEnabled: true,
     link1Text: "SHOP THE customized",
     link1Href: "/shop",
     focusX: 50,
-    focusY: 50,
+    focusY: 30,
   },
   {
     id: "slide-3",
     title: "Where little dreams wear love",
-    imageKey: "v2-slide-3",
-    mobileImageKey: "occasion-festive",
+    imageKey: "hero-dreams",
     defaultEnabled: true,
     link1Text: "SHOP COCO CORE",
     link1Href: "/shop",
-    focusX: 50,
+    focusX: 35,
     focusY: 50,
+  },
+  {
+    id: "slide-4",
+    title: "Love in Every Little Thread.",
+    imageKey: "hero-thread",
+    defaultEnabled: true,
+    link1Text: "Explore More",
+    link1Href: "/shop",
+    focusX: 70,
+    focusY: 45,
   },
 ];
 
@@ -178,6 +205,7 @@ export interface HeroV2SlideSetting {
   id: string;
   enabled: boolean;
   title: string;
+  imageKey: ImageKey;
   link1Text: string;
   link1Href: string;
   link2Text: string;
@@ -219,6 +247,7 @@ function buildDefaultSlides(): HeroV2SlideSetting[] {
     id: s.id,
     enabled: s.defaultEnabled,
     title: s.title,
+    imageKey: s.imageKey,
     link1Text: s.link1Text,
     link1Href: s.link1Href,
     link2Text: s.link2Text || "",
@@ -237,7 +266,7 @@ export const DEFAULT_HERO_V2_CONFIG: HeroV2Config = {
   titleSizeDesktop: 48,
   titleSizeMobile: 32,
   headingText: "Sweet like Mishri. Soft like a hug.",
-  headingVisible: true,
+  headingVisible: false,
   linkStyle: "link",
   autoplay: true,
   intervalSec: 5,
@@ -321,6 +350,11 @@ export function validateHeroV2Config(raw: unknown): HeroV2Config {
         id: d.id,
         enabled: pickBool(s.enabled, d.enabled),
         title: clampText(s.title, d.title, 80),
+        imageKey: pickChoice(
+          s.imageKey,
+          ALLOWED_IMAGE_KEYS,
+          d.imageKey
+        ) as ImageKey,
         link1Text: clampText(s.link1Text, d.link1Text, 80),
         link1Href: pickChoice(s.link1Href, ALLOWED_HREFS, d.link1Href),
         link2Text: clampText(s.link2Text, d.link2Text, 80),

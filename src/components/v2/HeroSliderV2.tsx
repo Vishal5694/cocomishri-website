@@ -88,20 +88,18 @@ export function HeroSliderV2({
   const slides = React.useMemo<HeroSlideData[]>(() => {
     if (!useCustomizerConfig) return propSlides;
 
-    const propMap = new Map(propSlides.map((s) => [s.id, s]));
     const metaMap = new Map(AVAILABLE_HERO_V2_SLIDES.map((s) => [s.id, s]));
 
     const activeList = cfg.slides
       .filter((s) => s.enabled)
       .map((s): HeroSlideData | null => {
-        const base = propMap.get(s.id);
         const meta = metaMap.get(s.id);
-        if (!base && !meta) return null;
+        if (!meta) return null;
 
         const links: { label: string; href: string }[] = [
           {
-            label: s.link1Text || meta?.link1Text || "Shop now",
-            href: s.link1Href || meta?.link1Href || "/shop",
+            label: s.link1Text || meta.link1Text || "Shop now",
+            href: s.link1Href || meta.link1Href || "/shop",
           },
         ];
         if (s.link2Text && s.link2Href) {
@@ -109,26 +107,14 @@ export function HeroSliderV2({
         }
 
         const focusStr = `${s.focusX}% ${s.focusY}%`;
+        const resolvedKey = s.imageKey || meta.imageKey;
+        const entry = images[resolvedKey] as ImageEntry;
 
-        if (base) {
-          return {
-            ...base,
-            title: s.title,
-            links,
-            desktopPosition:
-              s.focusX === 50 && s.focusY === 50 && !base.desktopPosition
-                ? undefined
-                : focusStr,
-            videoUrl: s.previewVideoUrl || undefined,
-          };
-        }
-
-        const entry = images[meta!.imageKey] as ImageEntry;
         return {
-          id: meta!.id,
+          id: meta.id,
           title: s.title,
           links,
-          fallbackSrc: resolveImageUrl(meta!.imageKey),
+          fallbackSrc: resolveImageUrl(resolvedKey),
           alt: entry?.alt || s.title,
           desktopPosition: focusStr,
           shot: entry?.shot,
@@ -138,7 +124,7 @@ export function HeroSliderV2({
       .filter((x): x is HeroSlideData => x !== null);
 
     return activeList.length > 0 ? activeList : propSlides;
-  }, [isCustomActive, cfg.slides, propSlides]);
+  }, [useCustomizerConfig, cfg.slides, propSlides]);
 
   const [imageIndex, setImageIndex] = React.useState(0);
   const [textIndex, setTextIndex] = React.useState(0);
