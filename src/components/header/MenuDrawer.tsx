@@ -31,7 +31,7 @@ import { useRecentlyViewed } from "@/lib/storage/useRecentlyViewed";
 import { siteConfig } from "@/lib/site-config";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { HEADER_CONFIG } from "@/lib/header-config";
 import { getBrandHex } from "@/lib/brand-colors";
 
 interface MenuDrawerProps {
@@ -207,7 +207,7 @@ export function MenuDrawer({
 
   if (!isOpen) return null;
 
-  const cfg = useSectionConfig("site-header");
+  const cfg = HEADER_CONFIG;
   const drawerBgHex = getBrandHex(cfg.drawerBg);
   const currentDeptContent = drawerNav[activeTab];
   const currentSubMenuObj = drawerMore.find((m) => m.id === activeSubMenu);

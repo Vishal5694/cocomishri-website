@@ -10,7 +10,7 @@ import { Container } from "@/components/layout/Container";
 import { SearchPanel } from "@/components/layout/SearchPanel";
 import { AccountPanel } from "@/components/layout/AccountPanel";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { HEADER_CONFIG } from "@/lib/header-config";
 import { getBrandHex } from "@/lib/brand-colors";
 import { CountrySelector } from "./CountrySelector";
 import { MenuDrawer } from "./MenuDrawer";
@@ -20,7 +20,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const cartCount = useCartCount();
   const { activePanel, open, close } = usePanel();
-  const cfg = useSectionConfig("site-header");
+  const cfg = HEADER_CONFIG;
 
   const [hasHeroFlag, setHasHeroFlag] = React.useState(false);
   const [scrollY, setScrollY] = React.useState(0);

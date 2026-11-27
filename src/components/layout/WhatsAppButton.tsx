@@ -3,10 +3,10 @@
 import * as React from "react";
 import { MessageCircle } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { HEADER_CONFIG } from "@/lib/header-config";
 
 export function WhatsAppButton() {
-  const cfg = useSectionConfig("site-header");
+  const cfg = HEADER_CONFIG;
   const isAvailable =
     cfg.whatsappOn &&
     siteConfig.whatsapp &&

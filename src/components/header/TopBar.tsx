@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { Container } from "@/components/layout/Container";
 import { cn } from "@/lib/utils";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { HEADER_CONFIG } from "@/lib/header-config";
 import { getBrandHex } from "@/lib/brand-colors";
 
 export function TopBar() {
-  const cfg = useSectionConfig("site-header");
+  const cfg = HEADER_CONFIG;
   const messages = React.useMemo(
     () =>
       cfg.topBarMessages

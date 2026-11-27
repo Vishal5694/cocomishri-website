@@ -1,16 +1,11 @@
 "use client";
 
 import * as React from "react";
-import {
-  homeHeroSection,
-  siteHeaderSection,
-  type SectionId,
-} from "./registry";
+import { homeHeroSection, type SectionId } from "./registry";
 import {
   DEFAULT_HERO_V2_CONFIG,
   type HeroV2Config,
 } from "@/lib/hero-v2-config";
-import { DEFAULT_HEADER_CONFIG, type HeaderConfig } from "@/lib/header-config";
 
 const STORAGE_KEY = "cm_customizer_v1";
 
@@ -19,21 +14,16 @@ export const isCustomizerEnabled =
 
 export type ConfigMap = {
   "home-hero": HeroV2Config;
-  "site-header": HeaderConfig;
 };
 
 interface CustomizerContextValue {
   configs: ConfigMap;
-  updateConfig: <K extends keyof ConfigMap>(
-    sectionId: K,
-    next: ConfigMap[K]
-  ) => void;
-  resetConfig: (sectionId: keyof ConfigMap) => void;
+  updateConfig: <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => void;
+  resetConfig: (sectionId: SectionId) => void;
 }
 
 const DEFAULT_MAP: ConfigMap = {
   "home-hero": DEFAULT_HERO_V2_CONFIG,
-  "site-header": DEFAULT_HEADER_CONFIG,
 };
 
 const CustomizerContext = React.createContext<CustomizerContextValue>({
@@ -78,11 +68,10 @@ export function CustomizerProvider({
   React.useEffect(() => {
     if (!isCustomizerEnabled || typeof window === "undefined") return;
 
-    // 1. Check #cm= hash first
+    // 1. Check #cm= hash first (ignore any site-header key)
     const hash = window.location.hash;
     if (hash.startsWith("#cm=")) {
       const payload = hash.slice(4);
-      // Always clean hash from URL
       window.history.replaceState(
         null,
         "",
@@ -91,48 +80,34 @@ export function CustomizerProvider({
       try {
         const decoded = decodeBase64Utf8(decodeURIComponent(payload));
         const parsed = JSON.parse(decoded) as Record<string, unknown>;
-        const nextMap: ConfigMap = { ...DEFAULT_MAP };
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          ("home-hero" in parsed || "site-header" in parsed)
-        ) {
-          if ("home-hero" in parsed) {
-            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
-          }
-          if ("site-header" in parsed) {
-            nextMap["site-header"] = siteHeaderSection.validate(
-              parsed["site-header"]
-            );
-          }
-        } else {
-          nextMap["home-hero"] = homeHeroSection.validate(parsed);
-        }
+        const nextHero =
+          parsed && typeof parsed === "object" && "home-hero" in parsed
+            ? homeHeroSection.validate(parsed["home-hero"])
+            : homeHeroSection.validate(parsed);
+        const nextMap: ConfigMap = { "home-hero": nextHero };
         setConfigs(nextMap);
         persist(nextMap);
         return;
       } catch {
-        // Broken hash/JSON falls back cleanly to defaults/storage
+        // Broken hash/JSON falls back cleanly
       }
     }
 
-    // 2. Load from localStorage
+    // 2. Load from localStorage and strip any legacy 'site-header' key
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Record<string, unknown>;
-        const nextMap: ConfigMap = { ...DEFAULT_MAP };
-        if (parsed && typeof parsed === "object") {
-          if ("home-hero" in parsed) {
-            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
-          }
-          if ("site-header" in parsed) {
-            nextMap["site-header"] = siteHeaderSection.validate(
-              parsed["site-header"]
-            );
-          }
-        }
+        const nextMap: ConfigMap = {
+          "home-hero":
+            parsed && typeof parsed === "object" && "home-hero" in parsed
+              ? homeHeroSection.validate(parsed["home-hero"])
+              : DEFAULT_HERO_V2_CONFIG,
+        };
         setConfigs(nextMap);
+        if (parsed && typeof parsed === "object" && "site-header" in parsed) {
+          persist(nextMap);
+        }
       }
     } catch {
       // Ignore broken storage JSON
@@ -151,17 +126,12 @@ export function CustomizerProvider({
       }
       try {
         const parsed = JSON.parse(e.newValue) as Record<string, unknown>;
-        const nextMap: ConfigMap = { ...DEFAULT_MAP };
-        if (parsed && typeof parsed === "object") {
-          if ("home-hero" in parsed) {
-            nextMap["home-hero"] = homeHeroSection.validate(parsed["home-hero"]);
-          }
-          if ("site-header" in parsed) {
-            nextMap["site-header"] = siteHeaderSection.validate(
-              parsed["site-header"]
-            );
-          }
-        }
+        const nextMap: ConfigMap = {
+          "home-hero":
+            parsed && typeof parsed === "object" && "home-hero" in parsed
+              ? homeHeroSection.validate(parsed["home-hero"])
+              : DEFAULT_HERO_V2_CONFIG,
+        };
         setConfigs(nextMap);
       } catch {
         // Ignore broken storage
@@ -173,12 +143,9 @@ export function CustomizerProvider({
   }, []);
 
   const updateConfig = React.useCallback(
-    <K extends keyof ConfigMap>(sectionId: K, next: ConfigMap[K]) => {
+    <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => {
       if (!isCustomizerEnabled) return;
-      const validated =
-        sectionId === "home-hero"
-          ? (homeHeroSection.validate(next) as ConfigMap[K])
-          : (siteHeaderSection.validate(next) as ConfigMap[K]);
+      const validated = homeHeroSection.validate(next) as ConfigMap[K];
       setConfigs((prev) => {
         const nextMap = { ...prev, [sectionId]: validated };
         persist(nextMap);
@@ -189,7 +156,7 @@ export function CustomizerProvider({
   );
 
   const resetConfig = React.useCallback(
-    (sectionId: keyof ConfigMap) => {
+    (sectionId: SectionId) => {
       if (!isCustomizerEnabled) return;
       setConfigs((prev) => {
         const nextMap = { ...prev, [sectionId]: DEFAULT_MAP[sectionId] };
@@ -207,7 +174,7 @@ export function CustomizerProvider({
   );
 }
 
-export function useSectionConfig<K extends keyof ConfigMap>(
+export function useSectionConfig<K extends SectionId>(
   sectionId: K
 ): ConfigMap[K] {
   const ctx = React.useContext(CustomizerContext);

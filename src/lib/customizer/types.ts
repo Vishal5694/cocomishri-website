@@ -2,19 +2,10 @@ export type OptionGroup =
   | "Layout"
   | "Slides"
   | "Text"
-  | "Motion & controls"
-  | "Button"
   | "Links"
   | "Motion"
   | "Controls"
-  | "Photos"
-  | "Top bar"
-  | "Logo"
-  | "Header bar"
-  | "Over the hero"
-  | "Scrolling"
-  | "Right side"
-  | "Drawer";
+  | "Photos";
 
 export type Option =
   | {
@@ -54,17 +45,10 @@ export type Option =
       group: OptionGroup;
       placeholder?: string;
       maxLength: number;
-    }
-  | {
-      kind: "color";
-      key: string;
-      label: string;
-      group: OptionGroup;
-      allowOriginal?: boolean;
     };
 
 export interface Section<T = unknown> {
-  id: "home-hero" | "site-header";
+  id: "home-hero";
   title: string;
   options: Option[];
   defaults: T;

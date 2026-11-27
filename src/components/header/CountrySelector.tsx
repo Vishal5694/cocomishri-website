@@ -4,7 +4,7 @@ import * as React from "react";
 import { Globe, Check } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { HEADER_CONFIG } from "@/lib/header-config";
 import { getBrandHex } from "@/lib/brand-colors";
 
 interface CountrySelectorProps {
@@ -12,7 +12,7 @@ interface CountrySelectorProps {
 }
 
 export function CountrySelector({ transparent = false }: CountrySelectorProps) {
-  const cfg = useSectionConfig("site-header");
+  const cfg = HEADER_CONFIG;
   const [isOpen, setIsOpen] = React.useState(false);
   const [showGlobalNote, setShowGlobalNote] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
