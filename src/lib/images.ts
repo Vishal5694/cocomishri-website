@@ -326,8 +326,8 @@ export const images = {
   },
   "world-fabric": {
     src: "",
-    sampleSrc: null,
-    alt: "Soft woven natural cotton fabric texture",
+    sampleSrc: u("1630347794192-22f1895bb934"),
+    alt: "",
     shot: "Soft natural woven linen/cotton fabric macro",
     ratio: "16/9",
   },

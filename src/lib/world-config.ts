@@ -1,4 +1,5 @@
-export type WorldBg = "fabric" | "cream-50" | "sand-100";
+export type WorldBg = "fabric-photo" | "woven" | "plain";
+export type WorldTint = "caramel-100" | "sand-100" | "blush-100" | "cream-50";
 export type WorldSpeed = "slow" | "normal" | "fast";
 
 export interface WorldConfig {
@@ -14,6 +15,10 @@ export interface WorldConfig {
   bodySize: number;
   paragraphMaxWidthRem: number;
   background: WorldBg;
+  fabricTint: WorldTint;
+  veilStrength: number;
+  fabricPosX: number;
+  fabricPosY: number;
   weaveStrength: number;
   grainStrength: number;
   sectionPadding: number;
@@ -35,7 +40,7 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
   title: "THE WORLD OF",
   subtitle: "Little Ones. Thoughtfully Dressed.",
   paragraph:
-    "At Cocomishri, we believe childhood deserves a little extra thought. Inspired by life's little moments, we create comfortable, timeless clothing with carefully chosen fabrics, considered details, and playful designs. Because childhood isn't about dressing up. It's about feeling free to explore, play, dream, and grow.",
+    "At Cocomishri, we believe childhood deserves a little extra thought. Inspired by life's little moments, we create comfortable, timeless clothing with carefully chosen fabrics, considered details, and playful designs. After all, childhood isn't about dressing up. It's about feeling free to explore, play, dream, and grow.",
   highlightWords: "explore, play, dream, grow",
   closing: "Made with care. Created for little adventures.",
   eyebrowSizeDesktop: 30,
@@ -44,7 +49,11 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
   logoWidthMobile: 315,
   bodySize: 17,
   paragraphMaxWidthRem: 54,
-  background: "fabric",
+  background: "fabric-photo",
+  fabricTint: "caramel-100",
+  veilStrength: 55,
+  fabricPosX: 50,
+  fabricPosY: 50,
   weaveStrength: 100,
   grainStrength: 100,
   sectionPadding: 112,
@@ -127,9 +136,17 @@ export function validateWorldConfig(raw: unknown): WorldConfig {
     ),
     background: pickChoice(
       obj.background,
-      ["fabric", "cream-50", "sand-100"] as const,
+      ["fabric-photo", "woven", "plain"] as const,
       def.background
     ),
+    fabricTint: pickChoice(
+      obj.fabricTint,
+      ["caramel-100", "sand-100", "blush-100", "cream-50"] as const,
+      def.fabricTint
+    ),
+    veilStrength: clampInt(obj.veilStrength, 20, 70, def.veilStrength),
+    fabricPosX: clampInt(obj.fabricPosX, 0, 100, def.fabricPosX),
+    fabricPosY: clampInt(obj.fabricPosY, 0, 100, def.fabricPosY),
     weaveStrength: clampInt(obj.weaveStrength, 0, 100, def.weaveStrength),
     grainStrength: clampInt(obj.grainStrength, 0, 100, def.grainStrength),
     sectionPadding: clampInt(obj.sectionPadding, 48, 144, def.sectionPadding),

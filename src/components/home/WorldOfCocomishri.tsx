@@ -1,14 +1,23 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
 import { images } from "@/lib/images";
 import {
   DEFAULT_WORLD_CONFIG,
   type WorldConfig,
+  type WorldTint,
 } from "@/lib/world-config";
 import { cn } from "@/lib/utils";
+
+const TINT_HEX: Record<WorldTint, string> = {
+  "caramel-100": "#F7E8D8",
+  "sand-100": "#F4EADD",
+  "blush-100": "#F8E6DF",
+  "cream-50": "#FCF8F2",
+};
 
 const SPEED_MULT: Record<WorldConfig["speed"], number> = {
   slow: 1.5,
@@ -132,11 +141,23 @@ export function WorldOfCocomishri() {
   const isPlaying = phase === "playing";
   const loopsRunning = isInView && !reducedMotion;
 
-  const realFabricSrc = images["world-fabric"]?.src;
-  const isFabricMode = cfg.background === "fabric";
-  const baseBgHex = cfg.background === "cream-50" ? "#FCF8F2" : "#F4EADD";
+  const fabricEntry = images["world-fabric"];
+  const isDev = process.env.NODE_ENV !== "production";
+  const showSample =
+    isDev || process.env.NEXT_PUBLIC_SHOW_SAMPLE_IMAGES === "true";
+  const fabricImgSrc =
+    fabricEntry?.src || (showSample ? fabricEntry?.sampleSrc : null);
+
+  const showFabricPhoto =
+    cfg.background === "fabric-photo" && Boolean(fabricImgSrc);
+  const showWoven =
+    cfg.background === "woven" ||
+    (cfg.background === "fabric-photo" && !fabricImgSrc);
+
+  const baseBgHex = showWoven ? "#F4EADD" : TINT_HEX[cfg.fabricTint];
   const weaveMult = cfg.weaveStrength / 100;
-  const grainOpacity = 0.06 * (cfg.grainStrength / 100);
+  const grainOpacity =
+    (showFabricPhoto ? 0.04 : 0.06) * (cfg.grainStrength / 100);
 
   return (
     <section
@@ -151,27 +172,62 @@ export function WorldOfCocomishri() {
       }
       className="relative w-full overflow-hidden px-6 py-[var(--w-pad-m)] lg:py-[var(--w-pad-d)] text-center"
     >
-      {/* Woven Fabric Background */}
-      {isFabricMode && (
+      {/* Real Fabric Photo Background */}
+      {showFabricPhoto && fabricImgSrc && (
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-          {realFabricSrc ? (
-            <img
-              src={asset(realFabricSrc)}
-              alt=""
-              loading="lazy"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: [
-                  `repeating-linear-gradient(0deg, rgba(69, 33, 4, ${(0.03 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 3px)`,
-                  `repeating-linear-gradient(90deg, rgba(69, 33, 4, ${(0.04 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 4px)`,
-                ].join(", "),
-              }}
-            />
-          )}
+          <Image
+            src={fabricImgSrc}
+            alt=""
+            fill
+            sizes="100vw"
+            quality={60}
+            loading="lazy"
+            className="object-cover mix-blend-multiply"
+            style={{
+              objectPosition: `${cfg.fabricPosX}% ${cfg.fabricPosY}%`,
+            }}
+          />
+          {/* Cream Veil */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: "#FCF8F2",
+              opacity: cfg.veilStrength / 100,
+            }}
+          />
+          {/* Centre Glow */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(252, 248, 242, 0.5) 0%, rgba(252, 248, 242, 0) 70%)",
+            }}
+          />
+          {/* Fine Grain */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("${NOISE_SVG}")`,
+              backgroundRepeat: "repeat",
+              opacity: grainOpacity,
+              mixBlendMode: "multiply",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Woven Fabric Fallback / Pattern */}
+      {showWoven && (
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: [
+                `repeating-linear-gradient(0deg, rgba(69, 33, 4, ${(0.03 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 3px)`,
+                `repeating-linear-gradient(90deg, rgba(69, 33, 4, ${(0.04 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 4px)`,
+              ].join(", "),
+            }}
+          />
 
           {/* Fine Grain Layer */}
           <div
@@ -453,13 +509,21 @@ export function WorldOfCocomishri() {
                     <><span
                       className="text-cocoa-900 font-semibold px-[1px]"
                       style={{
+                        color: wordColor,
                         backgroundImage:
                           "linear-gradient(to top, #F8E6DF 45%, transparent 45%)",
                         backgroundRepeat: "no-repeat",
                         backgroundSize: isArmed ? "0% 100%" : "100% 100%",
                         transition:
                           isPlaying && !reducedMotion
-                            ? `background-size ${ms(500)} ease ${ms(hDelay)}`
+                            ? [
+                                cfg.inkOn
+                                  ? `color ${ms(400)} ease ${ms(wordDelay)}`
+                                  : "",
+                                `background-size ${ms(500)} ease ${ms(hDelay)}`,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")
                             : undefined,
                       }}
                     >{core}</span>{trail}</>
