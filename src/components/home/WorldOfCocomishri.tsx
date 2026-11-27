@@ -3,24 +3,24 @@
 import * as React from "react";
 import { asset } from "@/lib/asset";
 import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { images } from "@/lib/images";
 import {
   DEFAULT_WORLD_CONFIG,
   type WorldConfig,
 } from "@/lib/world-config";
 import { cn } from "@/lib/utils";
 
-const BG_HEX: Record<WorldConfig["background"], string> = {
-  "cream-50": "#FCF8F2",
-  "sand-100": "#F4EADD",
-  "blush-100": "#F8E6DF",
-  "caramel-100": "#F7E8D8",
-};
-
 const SPEED_MULT: Record<WorldConfig["speed"], number> = {
   slow: 1.5,
   normal: 1,
   fast: 0.7,
 };
+
+const NOISE_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+
+const INK_MASK_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='2.2' intercept='-0.15'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E";
 
 function tokenizeWords(text: string): string[] {
   return text.trim().split(/\s+/).filter(Boolean);
@@ -119,68 +119,26 @@ export function WorldOfCocomishri() {
     );
   }, [cfg.highlightWords]);
 
-  const eyebrowWords = tokenizeWords(cfg.eyebrow);
-  const headingLine1Words = tokenizeWords(cfg.headingLine1);
-  const headingLine2Words = tokenizeWords(cfg.headingLine2);
-  const totalHeadingWords = headingLine1Words.length + headingLine2Words.length;
+  const titleWords = tokenizeWords(cfg.title);
+  const bodyWords = tokenizeWords(cfg.paragraph);
 
-  const paragraphs = [cfg.body1, cfg.body2, cfg.body3].filter((p) =>
-    p.trim()
-  );
-  const bodyTokenCounts = paragraphs.map((p) => tokenizeWords(p));
-  const totalBodyWords = bodyTokenCounts.reduce((acc, a) => acc + a.length, 0);
-
-  let runningBodyIdx = 0;
-  let runningHighlightIdx = 0;
-
-  const bodyEndMs = 1800 + totalBodyWords * 30;
+  const bodyEndMs = 1700 + bodyWords.length * 28;
   const highlightStartMs = bodyEndMs + 150;
-  const closingDelayMs = bodyEndMs + 1600;
-  const mascotDelayMs = bodyEndMs + 2100;
+  const closingDelayMs = bodyEndMs + 1400;
+
+  let runningHighlightIdx = 0;
 
   const isArmed = phase === "armed";
   const isPlaying = phase === "playing";
   const loopsRunning = isInView && !reducedMotion;
 
-  const mascotElement = cfg.mascotOn ? (
-    <div
-      className={cn(
-        "flex justify-center",
-        cfg.mascotPosition === "above" ? "mb-6" : "mt-6"
-      )}
-    >
-      <div
-        style={{
-          opacity: isArmed ? 0 : 1,
-          transform: isArmed
-            ? "translateY(16px) scale(0.96)"
-            : "translateY(0) scale(1)",
-          transition:
-            isPlaying && !reducedMotion
-              ? `opacity ${ms(900)} ease-out ${ms(mascotDelayMs)}, transform ${ms(900)} ease-out ${ms(mascotDelayMs)}`
-              : undefined,
-        }}
-      >
-        <img
-          src={asset("/brand/mascot.svg")}
-          alt=""
-          loading="lazy"
-          style={
-            {
-              "--w-mascot-d": `${cfg.mascotWidth}px`,
-              "--w-mascot-m": `${Math.round(cfg.mascotWidth * (104 / 128))}px`,
-              animation:
-                cfg.mascotBreathing && !reducedMotion
-                  ? "cm-world-breathe 6s ease-in-out infinite"
-                  : undefined,
-              animationPlayState: loopsRunning ? "running" : "paused",
-            } as React.CSSProperties
-          }
-          className="h-auto w-[var(--w-mascot-m)] lg:w-[var(--w-mascot-d)]"
-        />
-      </div>
-    </div>
-  ) : null;
+  const realFabricSrc = images["world-fabric"]?.src;
+  const isFabricMode = cfg.background === "fabric";
+  const baseBgHex = cfg.background === "cream-50" ? "#FCF8F2" : "#F4EADD";
+  const weaveMult = cfg.weaveStrength / 100;
+  const grainOpacity = 0.06 * (cfg.grainStrength / 100);
+  const useDefaultClampTitle =
+    cfg.titleSizeDesktop === 64 && cfg.titleSizeMobile === 34;
 
   return (
     <section
@@ -188,20 +146,95 @@ export function WorldOfCocomishri() {
       aria-labelledby="world-heading"
       style={
         {
-          backgroundColor: BG_HEX[cfg.background],
+          backgroundColor: baseBgHex,
           "--w-pad-d": `${cfg.sectionPadding}px`,
-          "--w-pad-m": `${Math.round(cfg.sectionPadding * (64 / 96))}px`,
+          "--w-pad-m": `${Math.round(cfg.sectionPadding * (72 / 112))}px`,
         } as React.CSSProperties
       }
       className="relative w-full overflow-hidden px-6 py-[var(--w-pad-m)] lg:py-[var(--w-pad-d)] text-center"
     >
-      {/* Decorative Floating Crystals (hidden below 375px / narrow screens to prevent overlap) */}
+      {/* Woven Fabric Background */}
+      {isFabricMode && (
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          {realFabricSrc ? (
+            <img
+              src={asset(realFabricSrc)}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: [
+                  `repeating-linear-gradient(0deg, rgba(69, 33, 4, ${(0.03 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 3px)`,
+                  `repeating-linear-gradient(90deg, rgba(69, 33, 4, ${(0.04 * weaveMult).toFixed(4)}) 0 1px, transparent 1px 4px)`,
+                ].join(", "),
+              }}
+            />
+          )}
+
+          {/* Fine Grain Layer */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("${NOISE_SVG}")`,
+              backgroundRepeat: "repeat",
+              opacity: grainOpacity,
+              mixBlendMode: "multiply",
+            }}
+          />
+
+          {/* Soft Cream Vignette (lighter centre for readability) */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(252, 248, 242, 0.55) 0%, transparent 72%)",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Mascot Watermark ("Printed into the Fabric") */}
+      {cfg.watermarkOn && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none select-none"
+        >
+          <img
+            src={asset("/brand/mascot.svg")}
+            alt=""
+            loading="lazy"
+            style={{
+              width: `min(${cfg.watermarkSize}px, 92vw)`,
+              height: "auto",
+              opacity: isArmed ? 0 : cfg.watermarkOpacity,
+              transform: `translateY(${cfg.watermarkOffsetY}%)`,
+              mixBlendMode: "multiply",
+              filter: "sepia(0.3) saturate(0.7)",
+              maskImage: `url("${INK_MASK_SVG}")`,
+              WebkitMaskImage: `url("${INK_MASK_SVG}")`,
+              maskSize: "160px 160px",
+              WebkitMaskSize: "160px 160px",
+              maskRepeat: "repeat",
+              WebkitMaskRepeat: "repeat",
+              transition:
+                isPlaying && !reducedMotion
+                  ? `opacity ${ms(1600)} ease 0ms`
+                  : undefined,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Decorative Floating Crystals */}
       {cfg.crystalsOn && (
         <div
           aria-hidden="true"
           className="hidden min-[375px]:block pointer-events-none select-none"
         >
-          {/* 1. 4-point sparkle (amber-500) */}
           <svg
             width="14"
             height="14"
@@ -220,7 +253,6 @@ export function WorldOfCocomishri() {
             />
           </svg>
 
-          {/* 2. 4-point sparkle (caramel-500) */}
           <svg
             width="12"
             height="12"
@@ -239,7 +271,6 @@ export function WorldOfCocomishri() {
             />
           </svg>
 
-          {/* 3. Rounded square "sugar crystal" (sand-300) */}
           <span
             className="absolute left-[12%] bottom-[20%] size-[11px] rounded-[3px] bg-sand-300"
             style={{
@@ -250,7 +281,6 @@ export function WorldOfCocomishri() {
             }}
           />
 
-          {/* 4. Rounded square "sugar crystal" (blush-100) */}
           <span
             className="absolute right-[14%] bottom-[28%] size-[10px] rounded-[3px] bg-blush-100 border border-blush-500/30"
             style={{
@@ -261,7 +291,6 @@ export function WorldOfCocomishri() {
             }}
           />
 
-          {/* 5. Dot (blush-500) */}
           <span
             className="absolute right-[30%] top-[8%] size-[8px] rounded-full bg-blush-500"
             style={{
@@ -274,87 +303,59 @@ export function WorldOfCocomishri() {
         </div>
       )}
 
-      <div className="relative z-10 mx-auto max-w-2xl flex flex-col items-center">
-        {cfg.mascotPosition === "above" && mascotElement}
-
-        {/* Eyebrow */}
-        <p className="font-body font-semibold text-[11px] uppercase tracking-[0.2em] text-caramel-700 mb-3">
-          {eyebrowWords.map((word, idx) => (
-            <React.Fragment key={`eb-${idx}`}>
+      {/* Text Content */}
+      <div className="relative z-10 mx-auto max-w-3xl flex flex-col items-center">
+        {/* Title (h2) */}
+        <h2
+          id="world-heading"
+          style={
+            useDefaultClampTitle
+              ? { fontSize: "clamp(34px, 6vw, 64px)" }
+              : ({
+                  "--w-t-d": `${cfg.titleSizeDesktop}px`,
+                  "--w-t-m": `${cfg.titleSizeMobile}px`,
+                } as React.CSSProperties)
+          }
+          className={cn(
+            "font-heading [font-variation-settings:'SOFT'_75] font-medium text-cocoa-900 tracking-[0.04em] leading-[1.05] max-w-[14ch] sm:max-w-none",
+            !useDefaultClampTitle &&
+              "text-[length:var(--w-t-m)] lg:text-[length:var(--w-t-d)]"
+          )}
+        >
+          {titleWords.map((word, idx) => (
+            <React.Fragment key={`wt-${idx}`}>
               <span
                 className="inline-block"
                 style={{
                   opacity: isArmed ? 0 : 1,
-                  transform: isArmed ? "translateY(12px)" : "translateY(0)",
+                  transform: isArmed ? "translateY(14px)" : "translateY(0)",
                   transition:
                     isPlaying && !reducedMotion
-                      ? `opacity ${ms(700)} ease ${ms(idx * 120)}, transform ${ms(700)} ease ${ms(idx * 120)}`
+                      ? `opacity ${ms(800)} ease ${ms(100 + idx * 140)}, transform ${ms(800)} ease ${ms(100 + idx * 140)}`
                       : undefined,
                 }}
               >
                 {word}
               </span>
-              {idx < eyebrowWords.length - 1 && " "}
+              {idx < titleWords.length - 1 && " "}
             </React.Fragment>
           ))}
-        </p>
-
-        {/* Heading (h2) */}
-        <h2
-          id="world-heading"
-          style={
-            {
-              "--w-h-d": `${cfg.headingSizeDesktop}px`,
-              "--w-h-m": `${cfg.headingSizeMobile}px`,
-            } as React.CSSProperties
-          }
-          className="font-heading [font-variation-settings:'SOFT'_75] font-medium text-cocoa-900 leading-[1.15] text-[length:var(--w-h-m)] lg:text-[length:var(--w-h-d)]"
-        >
-          {headingLine1Words.map((word, idx) => {
-            const delayIdx = eyebrowWords.length + idx;
-            return (
-              <React.Fragment key={`h1-${idx}`}>
-                <span
-                  className="inline-block"
-                  style={{
-                    opacity: isArmed ? 0 : 1,
-                    transform: isArmed ? "translateY(12px)" : "translateY(0)",
-                    transition:
-                      isPlaying && !reducedMotion
-                        ? `opacity ${ms(700)} ease ${ms(delayIdx * 120)}, transform ${ms(700)} ease ${ms(delayIdx * 120)}`
-                        : undefined,
-                  }}
-                >
-                  {word}
-                </span>
-                {idx < headingLine1Words.length - 1 && " "}
-              </React.Fragment>
-            );
-          })}
-          <br />
-          {headingLine2Words.map((word, idx) => {
-            const delayIdx =
-              eyebrowWords.length + headingLine1Words.length + idx;
-            return (
-              <React.Fragment key={`h2-${idx}`}>
-                <span
-                  className="inline-block"
-                  style={{
-                    opacity: isArmed ? 0 : 1,
-                    transform: isArmed ? "translateY(12px)" : "translateY(0)",
-                    transition:
-                      isPlaying && !reducedMotion
-                        ? `opacity ${ms(700)} ease ${ms(delayIdx * 120)}, transform ${ms(700)} ease ${ms(delayIdx * 120)}`
-                        : undefined,
-                  }}
-                >
-                  {word}
-                </span>
-                {idx < headingLine2Words.length - 1 && " "}
-              </React.Fragment>
-            );
-          })}
         </h2>
+
+        {/* Subtitle */}
+        <p
+          className="mt-4 font-heading italic font-normal text-cocoa-700 text-[19px] lg:text-[24px] leading-snug"
+          style={{
+            opacity: isArmed ? 0 : 1,
+            transform: isArmed ? "translateY(8px)" : "translateY(0)",
+            transition:
+              isPlaying && !reducedMotion
+                ? `opacity ${ms(800)} ease ${ms(800)}, transform ${ms(800)} ease ${ms(800)}`
+                : undefined,
+          }}
+        >
+          {cfg.subtitle}
+        </p>
 
         {/* Stitch Line */}
         {cfg.stitchOn ? (
@@ -362,7 +363,7 @@ export function WorldOfCocomishri() {
             aria-hidden="true"
             viewBox="0 0 230 22"
             fill="none"
-            className="w-[160px] lg:w-[200px] h-auto mx-auto mt-3 mb-6"
+            className="w-[170px] lg:w-[220px] h-auto mx-auto mt-[14px] mb-7"
           >
             <defs>
               <mask id="cm-world-stitch-mask">
@@ -377,7 +378,7 @@ export function WorldOfCocomishri() {
                   style={{
                     transition:
                       isPlaying && !reducedMotion
-                        ? `stroke-dashoffset ${ms(1400)} ease ${ms(850 + totalHeadingWords * 0)}`
+                        ? `stroke-dashoffset ${ms(1400)} ease ${ms(1200)}`
                         : undefined,
                   }}
                 />
@@ -394,92 +395,65 @@ export function WorldOfCocomishri() {
             />
           </svg>
         ) : (
-          <div className="h-6" aria-hidden="true" />
+          <div className="h-7" aria-hidden="true" />
         )}
 
-        {/* Lead */}
+        {/* Paragraph */}
         <p
-          className="font-heading italic font-normal text-cocoa-700 text-[17px] lg:text-[20px] max-w-[34rem] mb-4 leading-relaxed"
-          style={{
-            opacity: isArmed ? 0 : 1,
-            transform: isArmed ? "translateY(8px)" : "translateY(0)",
-            transition:
-              isPlaying && !reducedMotion
-                ? `opacity ${ms(900)} ease ${ms(1300)}, transform ${ms(900)} ease ${ms(1300)}`
-                : undefined,
-          }}
-        >
-          {cfg.lead}
-        </p>
-
-        {/* Body 1–3 */}
-        <div
           style={
             {
               "--w-body-d": `${cfg.bodySize}px`,
-              "--w-body-m": `${Math.max(14, cfg.bodySize - 1)}px`,
+              "--w-body-m": `${Math.max(14, cfg.bodySize - 2)}px`,
             } as React.CSSProperties
           }
-          className="max-w-[36rem] space-y-3 mb-7 font-body font-normal leading-[1.75] text-cocoa-700 text-[length:var(--w-body-m)] lg:text-[length:var(--w-body-d)]"
+          className="max-w-[40rem] mb-7 font-body font-normal leading-[1.8] text-cocoa-700 text-[length:var(--w-body-m)] lg:text-[length:var(--w-body-d)]"
         >
-          {bodyTokenCounts.map((words, pIdx) => (
-            <p key={`bp-${pIdx}`}>
-              {words.map((token, wIdx) => {
-                const wordDelay = 1800 + runningBodyIdx * 30;
-                runningBodyIdx += 1;
-                const { core, trail } = splitWordPunctuation(token);
-                const isHighlighted = highlightSet.has(core.toLowerCase());
-                const hDelay = isHighlighted
-                  ? highlightStartMs + runningHighlightIdx * 320
-                  : 0;
-                if (isHighlighted) {
-                  runningHighlightIdx += 1;
-                }
+          {bodyWords.map((token, wIdx) => {
+            const wordDelay = 1700 + wIdx * 28;
+            const { core, trail } = splitWordPunctuation(token);
+            const isHighlighted = highlightSet.has(core.toLowerCase());
+            const hDelay = isHighlighted
+              ? highlightStartMs + runningHighlightIdx * 320
+              : 0;
+            if (isHighlighted) {
+              runningHighlightIdx += 1;
+            }
+            const wordColor = isArmed && cfg.inkOn ? "#E3CFB6" : undefined;
 
-                const wordColor =
-                  isArmed && cfg.inkOn ? "#E3CFB6" : undefined;
-
-                return (
-                  <React.Fragment key={`bw-${pIdx}-${wIdx}`}>
-                    <span
+            return (
+              <React.Fragment key={`bw-${wIdx}`}>
+                <span
+                  style={{
+                    color: wordColor,
+                    transition:
+                      isPlaying && !reducedMotion && cfg.inkOn
+                        ? `color ${ms(400)} ease ${ms(wordDelay)}`
+                        : undefined,
+                  }}
+                >
+                  {isHighlighted ? (
+                    <><span
+                      className="text-cocoa-900 font-semibold px-1"
                       style={{
-                        color: wordColor,
+                        backgroundImage:
+                          "linear-gradient(to top, #F8E6DF 45%, transparent 45%)",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: isArmed ? "0% 100%" : "100% 100%",
                         transition:
-                          isPlaying && !reducedMotion && cfg.inkOn
-                            ? `color ${ms(400)} ease ${ms(wordDelay)}`
+                          isPlaying && !reducedMotion
+                            ? `background-size ${ms(500)} ease ${ms(hDelay)}`
                             : undefined,
                       }}
-                    >
-                      {isHighlighted ? (
-                        <>
-                          <span
-                            className="text-cocoa-900 font-semibold px-1"
-                            style={{
-                              backgroundImage:
-                                "linear-gradient(to top, #F8E6DF 45%, transparent 45%)",
-                              backgroundRepeat: "no-repeat",
-                              backgroundSize: isArmed ? "0% 100%" : "100% 100%",
-                              transition:
-                                isPlaying && !reducedMotion
-                                  ? `background-size ${ms(500)} ease ${ms(hDelay)}`
-                                  : undefined,
-                            }}
-                          >
-                            {core}
-                          </span>
-                          {trail}
-                        </>
-                      ) : (
-                        token
-                      )}
-                    </span>
-                    {wIdx < words.length - 1 && " "}
-                  </React.Fragment>
-                );
-              })}
-            </p>
-          ))}
-        </div>
+                    >{core}</span>{trail}</>
+                  ) : (
+                    token
+                  )}
+                </span>
+                {wIdx < bodyWords.length - 1 && " "}
+              </React.Fragment>
+            );
+          })}
+        </p>
 
         {/* Closing */}
         <p
@@ -496,7 +470,28 @@ export function WorldOfCocomishri() {
           {cfg.closing}
         </p>
 
-        {cfg.mascotPosition === "below" && mascotElement}
+        {/* Optional Bottom Mascot (OFF by default) */}
+        {cfg.mascotOn && (
+          <div className="mt-6 flex justify-center">
+            <img
+              src={asset("/brand/mascot.svg")}
+              alt=""
+              loading="lazy"
+              style={
+                {
+                  "--w-mascot-d": `${cfg.mascotWidth}px`,
+                  "--w-mascot-m": `${Math.round(cfg.mascotWidth * (104 / 128))}px`,
+                  animation:
+                    cfg.mascotBreathing && !reducedMotion
+                      ? "cm-world-breathe 6s ease-in-out infinite"
+                      : undefined,
+                  animationPlayState: loopsRunning ? "running" : "paused",
+                } as React.CSSProperties
+              }
+              className="h-auto w-[var(--w-mascot-m)] lg:w-[var(--w-mascot-d)]"
+            />
+          </div>
+        )}
       </div>
 
       <style>{`

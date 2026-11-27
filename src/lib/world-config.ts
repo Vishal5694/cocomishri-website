@@ -1,22 +1,23 @@
-export type WorldBg = "cream-50" | "sand-100" | "blush-100" | "caramel-100";
+export type WorldBg = "fabric" | "cream-50" | "sand-100";
 export type WorldSpeed = "slow" | "normal" | "fast";
-export type MascotPosition = "below" | "above";
 
 export interface WorldConfig {
-  eyebrow: string;
-  headingLine1: string;
-  headingLine2: string;
-  lead: string;
-  body1: string;
-  body2: string;
-  body3: string;
+  title: string;
+  subtitle: string;
+  paragraph: string;
   highlightWords: string;
   closing: string;
-  headingSizeDesktop: number;
-  headingSizeMobile: number;
+  titleSizeDesktop: number;
+  titleSizeMobile: number;
   bodySize: number;
   background: WorldBg;
+  weaveStrength: number;
+  grainStrength: number;
   sectionPadding: number;
+  watermarkOn: boolean;
+  watermarkOpacity: number;
+  watermarkSize: number;
+  watermarkOffsetY: number;
   animationOn: boolean;
   speed: WorldSpeed;
   inkOn: boolean;
@@ -24,36 +25,34 @@ export interface WorldConfig {
   crystalsOn: boolean;
   mascotOn: boolean;
   mascotWidth: number;
-  mascotPosition: MascotPosition;
   mascotBreathing: boolean;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
-  eyebrow: "The world of Cocomishri",
-  headingLine1: "Little ones.",
-  headingLine2: "Thoughtfully dressed.",
-  lead: "At Cocomishri, we believe childhood deserves a little extra thought.",
-  body1:
-    "Inspired by the beauty of little moments and the joy of growing up, we create thoughtfully designed clothing that brings together comfort, quality, and timeless style.",
-  body2:
-    "From carefully selected fabrics to considered details and playful designs, every piece is made with little ones in mind.",
-  body3:
-    "Because childhood is not about dressing up. It's about feeling free to explore, play, dream, and grow.",
+  title: "THE WORLD OF COCOMISHRI",
+  subtitle: "Little Ones. Thoughtfully Dressed.",
+  paragraph:
+    "At Cocomishri, we believe childhood deserves a little extra thought. Inspired by life's little moments, we create comfortable, timeless clothing with carefully chosen fabrics, considered details, and playful designs. Because childhood isn't about dressing up. It's about feeling free to explore, play, dream, and grow.",
   highlightWords: "explore, play, dream, grow",
   closing: "Made with care. Created for little adventures.",
-  headingSizeDesktop: 40,
-  headingSizeMobile: 28,
-  bodySize: 16,
-  background: "cream-50",
-  sectionPadding: 96,
+  titleSizeDesktop: 64,
+  titleSizeMobile: 34,
+  bodySize: 17,
+  background: "fabric",
+  weaveStrength: 100,
+  grainStrength: 100,
+  sectionPadding: 112,
+  watermarkOn: true,
+  watermarkOpacity: 0.08,
+  watermarkSize: 600,
+  watermarkOffsetY: 0,
   animationOn: true,
   speed: "normal",
   inkOn: true,
   stitchOn: true,
   crystalsOn: true,
-  mascotOn: true,
+  mascotOn: false,
   mascotWidth: 128,
-  mascotPosition: "below",
   mascotBreathing: true,
 };
 
@@ -65,6 +64,16 @@ function clampInt(
 ): number {
   if (typeof val !== "number" || !Number.isFinite(val)) return fallback;
   return Math.max(min, Math.min(max, Math.round(val)));
+}
+
+function clampFloat(
+  val: unknown,
+  min: number,
+  max: number,
+  fallback: number
+): number {
+  if (typeof val !== "number" || !Number.isFinite(val)) return fallback;
+  return Math.max(min, Math.min(max, Math.round(val * 100) / 100));
 }
 
 function clampText(val: unknown, fallback: string, maxLen: number): string {
@@ -94,24 +103,31 @@ export function validateWorldConfig(raw: unknown): WorldConfig {
   const def = DEFAULT_WORLD_CONFIG;
 
   return {
-    eyebrow: clampText(obj.eyebrow, def.eyebrow, 40),
-    headingLine1: clampText(obj.headingLine1, def.headingLine1, 40),
-    headingLine2: clampText(obj.headingLine2, def.headingLine2, 40),
-    lead: clampText(obj.lead, def.lead, 120),
-    body1: clampText(obj.body1, def.body1, 280),
-    body2: clampText(obj.body2, def.body2, 280),
-    body3: clampText(obj.body3, def.body3, 280),
+    title: clampText(obj.title, def.title, 80),
+    subtitle: clampText(obj.subtitle, def.subtitle, 100),
+    paragraph: clampText(obj.paragraph, def.paragraph, 500),
     highlightWords: clampText(obj.highlightWords, def.highlightWords, 120),
     closing: clampText(obj.closing, def.closing, 80),
-    headingSizeDesktop: clampInt(obj.headingSizeDesktop, 28, 56, def.headingSizeDesktop),
-    headingSizeMobile: clampInt(obj.headingSizeMobile, 22, 40, def.headingSizeMobile),
+    titleSizeDesktop: clampInt(obj.titleSizeDesktop, 40, 80, def.titleSizeDesktop),
+    titleSizeMobile: clampInt(obj.titleSizeMobile, 28, 48, def.titleSizeMobile),
     bodySize: clampInt(obj.bodySize, 14, 18, def.bodySize),
     background: pickChoice(
       obj.background,
-      ["cream-50", "sand-100", "blush-100", "caramel-100"] as const,
+      ["fabric", "cream-50", "sand-100"] as const,
       def.background
     ),
+    weaveStrength: clampInt(obj.weaveStrength, 0, 100, def.weaveStrength),
+    grainStrength: clampInt(obj.grainStrength, 0, 100, def.grainStrength),
     sectionPadding: clampInt(obj.sectionPadding, 48, 144, def.sectionPadding),
+    watermarkOn: pickBool(obj.watermarkOn, def.watermarkOn),
+    watermarkOpacity: clampFloat(
+      obj.watermarkOpacity,
+      0.03,
+      0.12,
+      def.watermarkOpacity
+    ),
+    watermarkSize: clampInt(obj.watermarkSize, 300, 800, def.watermarkSize),
+    watermarkOffsetY: clampInt(obj.watermarkOffsetY, -30, 30, def.watermarkOffsetY),
     animationOn: pickBool(obj.animationOn, def.animationOn),
     speed: pickChoice(obj.speed, ["slow", "normal", "fast"] as const, def.speed),
     inkOn: pickBool(obj.inkOn, def.inkOn),
@@ -119,7 +135,6 @@ export function validateWorldConfig(raw: unknown): WorldConfig {
     crystalsOn: pickBool(obj.crystalsOn, def.crystalsOn),
     mascotOn: pickBool(obj.mascotOn, def.mascotOn),
     mascotWidth: clampInt(obj.mascotWidth, 80, 200, def.mascotWidth),
-    mascotPosition: pickChoice(obj.mascotPosition, ["below", "above"] as const, def.mascotPosition),
     mascotBreathing: pickBool(obj.mascotBreathing, def.mascotBreathing),
   };
 }

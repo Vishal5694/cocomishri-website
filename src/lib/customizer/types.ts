@@ -1,8 +1,9 @@
 export type OptionGroup =
   | "Copy"
   | "Typography & layout"
+  | "Fabric & watermark"
   | "Animation"
-  | "Mascot";
+  | "Bottom mascot";
 
 export type Option =
   | {

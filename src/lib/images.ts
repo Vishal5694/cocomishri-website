@@ -324,6 +324,13 @@ export const images = {
     shot: "Newborn sleeping in cream knit romper",
     ratio: "16/9",
   },
+  "world-fabric": {
+    src: "",
+    sampleSrc: null,
+    alt: "Soft woven natural cotton fabric texture",
+    shot: "Soft natural woven linen/cotton fabric macro",
+    ratio: "16/9",
+  },
 } as const satisfies Record<string, ImageEntry>;
 
 export type ImageKey = keyof typeof images;

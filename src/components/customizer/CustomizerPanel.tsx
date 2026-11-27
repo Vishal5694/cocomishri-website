@@ -58,8 +58,9 @@ export function CustomizerPanel() {
   const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
     Copy: false,
     "Typography & layout": true,
+    "Fabric & watermark": true,
     Animation: true,
-    Mascot: false,
+    "Bottom mascot": false,
   });
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
