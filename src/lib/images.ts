@@ -382,14 +382,14 @@ export const images = {
   },
   "banner-siblings": {
     src: "",
-    sampleSrc: u("1704243448244-e49c88ade9b4"),
+    sampleSrc: u("1704243448244-e49c48ade9b4"),
     alt: "A brother and sister laughing together outdoors",
     shot: "Brother and sister laughing outdoors, landscape",
     ratio: "16/9",
   },
   "banner-siblings-phone": {
     src: "",
-    sampleSrc: u("1704243448244-e49c88ade9b4"),
+    sampleSrc: u("1704243448244-e49c48ade9b4"),
     alt: "A brother and sister laughing together outdoors",
     shot: "Brother and sister laughing outdoors, portrait",
     ratio: "4/5",
