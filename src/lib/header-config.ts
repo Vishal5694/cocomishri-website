@@ -78,11 +78,11 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   topBarOn: true,
   topBarMessages: siteConfig.topBarMessages.map((_, idx) => ({
     id: idx,
-    enabled: true,
+    enabled: idx !== 4,
   })),
   rotateSec: 5,
   topBarArrows: true,
-  topBarBg: "caramel-100",
+  topBarBg: "sand-300",
   topBarText: "cocoa-900",
   topBarHeight: 32,
 
