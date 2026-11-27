@@ -466,5 +466,5 @@ export const siteHeaderSection: Section<HeaderConfig> = {
   ],
 };
 
-export const customizerSections = [homeHeroSection, siteHeaderSection] as const;
+export const customizerSections = [siteHeaderSection] as const;
 export type SectionId = (typeof customizerSections)[number]["id"];

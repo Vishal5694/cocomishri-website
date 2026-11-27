@@ -22,8 +22,11 @@ export type ConfigMap = {
 
 interface CustomizerContextValue {
   configs: ConfigMap;
-  updateConfig: <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => void;
-  resetConfig: (sectionId: SectionId) => void;
+  updateConfig: <K extends keyof ConfigMap>(
+    sectionId: K,
+    next: ConfigMap[K]
+  ) => void;
+  resetConfig: (sectionId: keyof ConfigMap) => void;
 }
 
 const DEFAULT_MAP: ConfigMap = {
@@ -168,7 +171,7 @@ export function CustomizerProvider({
   }, []);
 
   const updateConfig = React.useCallback(
-    <K extends SectionId>(sectionId: K, next: ConfigMap[K]) => {
+    <K extends keyof ConfigMap>(sectionId: K, next: ConfigMap[K]) => {
       if (!isCustomizerEnabled) return;
       const validated =
         sectionId === "home-hero"
@@ -184,7 +187,7 @@ export function CustomizerProvider({
   );
 
   const resetConfig = React.useCallback(
-    (sectionId: SectionId) => {
+    (sectionId: keyof ConfigMap) => {
       if (!isCustomizerEnabled) return;
       setConfigs((prev) => {
         const nextMap = { ...prev, [sectionId]: DEFAULT_MAP[sectionId] };
@@ -202,7 +205,7 @@ export function CustomizerProvider({
   );
 }
 
-export function useSectionConfig<K extends SectionId>(
+export function useSectionConfig<K extends keyof ConfigMap>(
   sectionId: K
 ): ConfigMap[K] {
   const ctx = React.useContext(CustomizerContext);

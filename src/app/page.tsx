@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getImageProps } from "next/image";
 import { Truck, Eye, RotateCcw, Feather } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandImage } from "@/components/ui/BrandImage";
-import { HeroSlideshow } from "@/components/home/HeroSlideshow";
+import { HeroSliderV2, type HeroSlideData } from "@/components/v2/HeroSliderV2";
 import { Carousel } from "@/components/ui/Carousel";
 import { Section } from "@/components/ui/Section";
 import { ProductCard } from "@/components/product/ProductCard";
 import { mockProducts } from "@/lib/mock/products";
 import { siteConfig } from "@/lib/site-config";
-import type { ImageKey } from "@/lib/images";
+import { images, type ImageEntry, type ImageKey } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Cocomishri — Sweet like Mishri. Soft like a hug.",
@@ -63,11 +64,101 @@ const instagramKeys: ImageKey[] = [
   "instagram-10",
 ];
 
+function resolveHeroSrc(entry: ImageEntry): string | null {
+  const isDev = process.env.NODE_ENV !== "production";
+  const showSample =
+    isDev || process.env.NEXT_PUBLIC_SHOW_SAMPLE_IMAGES === "true";
+  return entry.src || (showSample ? entry.sampleSrc : null);
+}
+
+function buildHeroArtProps(
+  desktopKey: ImageKey,
+  mobileKey: ImageKey,
+  priority: boolean
+) {
+  const desktopEntry = images[desktopKey] as ImageEntry;
+  const mobileEntry = images[mobileKey] as ImageEntry;
+  const desktopSrc = resolveHeroSrc(desktopEntry);
+  const mobileSrc = resolveHeroSrc(mobileEntry);
+
+  if (!desktopSrc || !mobileSrc) {
+    return {
+      desktopSrcSet: undefined,
+      mobileSrcSet: undefined,
+      fallbackSrc: undefined,
+      alt: desktopEntry.alt,
+      desktopPosition: desktopEntry.position,
+      mobilePosition: mobileEntry.position,
+      shot: desktopEntry.shot,
+    };
+  }
+
+  const {
+    props: { srcSet: desktopSrcSet },
+  } = getImageProps({
+    src: desktopSrc,
+    alt: desktopEntry.alt,
+    fill: true,
+    priority,
+    sizes: "100vw",
+  });
+
+  const {
+    props: { srcSet: mobileSrcSet, src: fallbackSrc },
+  } = getImageProps({
+    src: mobileSrc,
+    alt: mobileEntry.alt,
+    fill: true,
+    priority,
+    sizes: "100vw",
+  });
+
+  return {
+    desktopSrcSet,
+    mobileSrcSet,
+    fallbackSrc,
+    alt: desktopEntry.alt,
+    desktopPosition: desktopEntry.position,
+    mobilePosition: mobileEntry.position,
+    shot: desktopEntry.shot,
+  };
+}
+
 export default function HomePage() {
+  const heroSlides: HeroSlideData[] = [
+    {
+      id: "slide-1",
+      title: "Sweet like Mishri. Soft like a hug.",
+      isPrimaryHeading: true,
+      links: [
+        { label: "SHOP NEW IN", href: "/collections/baby-new-in" },
+        { label: "OUR STORY", href: "/our-story" },
+      ],
+      ...buildHeroArtProps("hero-desktop", "hero-mobile", true),
+    },
+    {
+      id: "slide-2",
+      title: "Made for little moments. Loved for a lifetime.",
+      links: [
+        { label: "SHOP NAMING CEREMONY", href: "/collections/naming-ceremony" },
+      ],
+      ...buildHeroArtProps("v2-slide-2", "occasion-naming-ceremony", false),
+    },
+    {
+      id: "slide-3",
+      title: "Where little dreams wear love",
+      links: [{ label: "SHOP FESTIVE", href: "/collections/festive" }],
+      ...buildHeroArtProps("v2-slide-3", "occasion-festive", false),
+    },
+  ];
+
   return (
     <div className="flex flex-col w-full overflow-x-hidden">
-      {/* 2.1 Hero (full-screen slideshow, exactly ONE sr-only h1) */}
-      <HeroSlideshow />
+      {/* 2.1 Hero (shared v2 hero component, exactly ONE sr-only h1) */}
+      <HeroSliderV2
+        slides={heroSlides}
+        headingText="Sweet like Mishri. Soft like a hug."
+      />
 
       {/* 2.2 New in — product carousel (bg cream-50) */}
       <Section bg="cream-50">

@@ -186,8 +186,9 @@ function ContrastBadge({
 
 export function CustomizerPanel() {
   const { configs, updateConfig, resetConfig } = useCustomizer();
-  const [activeSection, setActiveSection] =
-    React.useState<SectionId>("home-hero");
+  const [activeSection, setActiveSection] = React.useState<SectionId>(
+    customizerSections[0].id
+  );
   const [copyScope, setCopyScope] = React.useState<"section" | "all">(
     "section"
   );
@@ -647,7 +648,7 @@ export function CustomizerPanel() {
 
   const enabledCount = heroConfig.slides.filter((s) => s.enabled).length;
   const activeSectionObj =
-    customizerSections.find((s) => s.id === activeSection) ?? homeHeroSection;
+    customizerSections.find((s) => s.id === activeSection) ?? siteHeaderSection;
   const activeGroups =
     activeSection === "home-hero" ? HERO_GROUPS : HEADER_GROUPS;
 

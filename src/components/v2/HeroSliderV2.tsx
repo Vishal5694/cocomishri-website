@@ -21,7 +21,13 @@ export interface HeroSlideData {
   isSample?: boolean;
 }
 
-export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
+export function HeroSliderV2({
+  slides,
+  headingText = "Cocomishri — soft, comfortable kidswear for little moments",
+}: {
+  slides: HeroSlideData[];
+  headingText?: string;
+}) {
   const [imageIndex, setImageIndex] = React.useState(0);
   const [textIndex, setTextIndex] = React.useState(0);
   const [textVisible, setTextVisible] = React.useState(true);
@@ -175,9 +181,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <h1 className="sr-only">
-        Cocomishri — soft, comfortable kidswear for little moments
-      </h1>
+      <h1 className="sr-only">{headingText}</h1>
       {/* Background Images (crossfade 600ms, instant with reduced motion) */}
       {slides.map((slide, idx) => {
         const isCurrentImg = idx === imageIndex;
@@ -294,7 +298,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
         <ChevronRight size={22} strokeWidth={1.5} />
       </button>
 
-      {/* Dots (24x24 tap areas) */}
+      {/* Dots (visual pill, 44x44 tap areas) */}
       <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-1">
         {slides.map((slide, idx) => {
           const active = idx === imageIndex;
@@ -305,7 +309,7 @@ export function HeroSliderV2({ slides }: { slides: HeroSlideData[] }) {
               onClick={() => goTo(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               aria-current={active ? "true" : undefined}
-              className="size-6 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-1"
+              className="size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-1"
             >
               <span
                 className={cn(
