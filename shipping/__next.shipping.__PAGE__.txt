@@ -1,0 +1,36 @@
+1:"$Sreact.fragment"
+2:"/cocomishri-website/_next/static/chunks/2m6wuujhw_7tq.js"
+3:"/cocomishri-website/_next/static/chunks/341-2bidd8tsm.js"
+4:"/cocomishri-website/_next/static/chunks/0r-1opmiwy6zf.js"
+5:"/cocomishri-website/_next/static/chunks/3prvkqnd67mlq.js"
+6:"/cocomishri-website/_next/static/chunks/2yf8jy2p8cxhk.js"
+7:I[92162,["$2","$3","$4","$5","$6"],"PanelProvider"]
+8:"DepartmentProvider"
+9:I[99177,["$2","$3","$4","$5","$6"],"$8"]
+a:I[70063,["$2","$3","$4","$5","$6"],"SiteChrome"]
+b:I[39756,["$2","$3","$4","$5","$6"],"default"]
+c:I[37457,["$2","$3","$4","$5","$6"],"default"]
+d:I[22016,["$2","$3","$4","$5","$6"],""]
+14:I[97367,["$2","$3","$4","$5","$6"],"OutletBoundary"]
+15:"$Sreact.suspense"
+18:"ViewportBoundary"
+19:I[97367,["$2","$3","$4","$5","$6"],"$18"]
+1a:"MetadataBoundary"
+1b:I[97367,["$2","$3","$4","$5","$6"],"$1a"]
+1c:I[27201,["$2","$3","$4","$5","$6"],"IconMark"]
+:HL["/cocomishri-website/_next/static/chunks/3y8l9hbizuvms.css","style"]
+f:X
+12:X
+12:C
+13:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","section",null,{"className":"min-h-[50vh] flex flex-col items-center justify-center p-8 text-center bg-cream-50","children":[["$","span",null,{"className":"eyebrow mb-3","children":"Help & Support"}],["$","h1",null,{"className":"mb-4","children":"Shipping"}],["$","p",null,{"className":"mb-8 text-cocoa-700 max-w-md","children":"This page is coming soon."}],["$","$Ld",null,{"href":"/","className":"relative inline-flex items-center justify-center font-body font-medium rounded-pill tracking-normal select-none transition-colors duration-300 ease-soft cursor-pointer bg-transparent border-[1.5px] border-blush-700 text-blush-700 hover:bg-blush-100 active:bg-blush-100 text-[15px] px-5 py-2.5 min-h-[44px]","aria-disabled":false,"children":[null,"Back to home"]}]]}],null,["$","$L14",null,{"children":["$","$15",null,{"name":"Next.MetadataOutlet","children":"$@16"}]}]]}],"p":"$@17","v":null,"s":"$f"}}]]
+10:[["children",{"s":"shipping","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$Lb",null,{"parallelRouterKey":"children","template":["$","$Lc",null,{}]}]]}],"p":"$@11","v":"$12","s":"$f"},"c":"$Q13"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/cocomishri-website/_next/static/chunks/3y8l9hbizuvms.css","precedence":"next"}],["$","script","script-0",{"src":"/cocomishri-website/_next/static/chunks/2m6wuujhw_7tq.js","async":true}],["$","script","script-1",{"src":"/cocomishri-website/_next/static/chunks/341-2bidd8tsm.js","async":true}],["$","script","script-2",{"src":"/cocomishri-website/_next/static/chunks/0r-1opmiwy6zf.js","async":true}],["$","script","script-3",{"src":"/cocomishri-website/_next/static/chunks/3prvkqnd67mlq.js","async":true}],["$","script","script-4",{"src":"/cocomishri-website/_next/static/chunks/2yf8jy2p8cxhk.js","async":true}]],["$","html",null,{"lang":"en","className":"sEsMwG_variable inAtfG_variable","children":["$","body",null,{"className":"min-h-screen flex flex-col bg-cream-50 text-cocoa-900","children":["$","$L7",null,{"children":["$","$L9",null,{"children":["$","$La",null,{"children":["$","$Lb",null,{"parallelRouterKey":"children","template":["$","$Lc",null,{}],"notFound":[["$","section",null,{"className":"min-h-[50vh] flex flex-col items-center justify-center p-8 text-center bg-cream-50","children":[["$","span",null,{"className":"eyebrow mb-3","children":"404"}],["$","h1",null,{"className":"mb-4","children":"We couldn't find that page"}],["$","p",null,{"className":"mb-8 text-cocoa-700 max-w-md","children":"The link you followed may be broken or the page may have been moved."}],["$","$Ld",null,{"href":"/","className":"relative inline-flex items-center justify-center font-body font-medium rounded-pill tracking-normal select-none transition-colors duration-300 ease-soft cursor-pointer bg-transparent border-[1.5px] border-blush-700 text-blush-700 hover:bg-blush-100 active:bg-blush-100 text-[15px] px-5 py-2.5 min-h-[44px]","aria-disabled":false,"children":[null,"Back to home"]}]]}],[]]}]}]}]}]}]}]]}],"p":"$@e","v":null,"s":"$f"},"c":"$Q10"},"h":{"r":["$","$1","h",{"children":[null,["$","$L19",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L1b",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$15",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Shipping Policy | Cocomishri"}],["$","meta","1",{"name":"description","content":"Sweet like Mishri. Soft like a hug."}],["$","link","2",{"rel":"icon","href":"/cocomishri-website/favicon.ico"}],["$","$L1c","3",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1d","v":null,"s":"$f"}},"a":"$@1e","u":"$@1f","b":"XvACUajKLuWxDa1j5_liU"}
+16:null
+f:300
+1f:true
+f:C
+1e:0
+11:"$undefined"
+e:"$undefined"
+1d:"$undefined"
+17:"$undefined"
