@@ -158,6 +158,7 @@ export default function HomePage() {
       <HeroSliderV2
         slides={heroSlides}
         headingText="Sweet like Mishri. Soft like a hug."
+        useCustomizerConfig
       />
 
       {/* 2.2 New in — product carousel (bg cream-50) */}

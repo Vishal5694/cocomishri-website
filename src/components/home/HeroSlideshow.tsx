@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Pause, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { BrandImage } from "@/components/ui/BrandImage";
 import { availableHeroSlides } from "@/lib/hero";
-import { useSectionConfig } from "@/lib/customizer/CustomizerContext";
+import { DEFAULT_HERO_CONFIG } from "@/lib/hero-config";
 import { images, type ImageEntry } from "@/lib/images";
 import imageLoader from "@/lib/image-loader";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ function getPosterUrl(imageKey: keyof typeof images): string | undefined {
 }
 
 export function HeroSlideshow() {
-  const config = useSectionConfig("home-hero");
+  const config = DEFAULT_HERO_CONFIG;
 
   const slideMetaMap = React.useMemo(
     () => new Map(availableHeroSlides.map((s) => [s.id, s])),

@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import {
-  customizerSections,
   homeHeroSection,
   siteHeaderSection,
   type SectionId,
 } from "./registry";
-import { DEFAULT_HERO_CONFIG, type HeroConfig } from "@/lib/hero-config";
+import {
+  DEFAULT_HERO_V2_CONFIG,
+  type HeroV2Config,
+} from "@/lib/hero-v2-config";
 import { DEFAULT_HEADER_CONFIG, type HeaderConfig } from "@/lib/header-config";
 
 const STORAGE_KEY = "cm_customizer_v1";
@@ -16,7 +18,7 @@ export const isCustomizerEnabled =
   process.env.NEXT_PUBLIC_ENABLE_CUSTOMIZER === "true";
 
 export type ConfigMap = {
-  "home-hero": HeroConfig;
+  "home-hero": HeroV2Config;
   "site-header": HeaderConfig;
 };
 
@@ -30,7 +32,7 @@ interface CustomizerContextValue {
 }
 
 const DEFAULT_MAP: ConfigMap = {
-  "home-hero": DEFAULT_HERO_CONFIG,
+  "home-hero": DEFAULT_HERO_V2_CONFIG,
   "site-header": DEFAULT_HEADER_CONFIG,
 };
 

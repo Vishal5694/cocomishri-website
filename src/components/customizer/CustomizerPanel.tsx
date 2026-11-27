@@ -26,10 +26,11 @@ import {
   type ConfigMap,
 } from "@/lib/customizer/CustomizerContext";
 import {
-  SECOND_LINK_OPTIONS,
-  type HeroConfig,
-  type SlideSetting,
-} from "@/lib/hero-config";
+  HERO_V2_LINK_OPTIONS,
+  HERO_V2_OPTIONAL_LINK_OPTIONS,
+  type HeroV2Config,
+  type HeroV2SlideSetting,
+} from "@/lib/hero-v2-config";
 import type { HeaderConfig, TopBarMessageSetting } from "@/lib/header-config";
 import {
   brandColors,
@@ -47,8 +48,9 @@ const HERO_GROUPS: OptionGroup[] = [
   "Layout",
   "Slides",
   "Text",
-  "Motion & controls",
-  "Button",
+  "Links",
+  "Motion",
+  "Controls",
   "Photos",
 ];
 
@@ -74,26 +76,26 @@ function logoContrastHex(color: LogoColorKey): string {
   return getBrandHex(color);
 }
 
-function buildHeroSummary(config: HeroConfig): string {
+function buildHeroSummary(config: HeroV2Config): string {
   const lines: string[] = ["HOME HERO SETTINGS", ""];
 
   for (const opt of homeHeroSection.options) {
     if (opt.kind === "choice") {
-      const val = String(config[opt.key as keyof HeroConfig] ?? "");
+      const val = String(config[opt.key as keyof HeroV2Config] ?? "");
       const choice = opt.choices.find((c) => c.value === val);
       lines.push(`${opt.label}: ${choice ? choice.label : val}`);
     } else if (opt.kind === "toggle") {
-      const val = Boolean(config[opt.key as keyof HeroConfig]);
+      const val = Boolean(config[opt.key as keyof HeroV2Config]);
       lines.push(`${opt.label}: ${val ? "On" : "Off"}`);
     } else if (opt.kind === "range") {
-      const val = config[opt.key as keyof HeroConfig];
+      const val = config[opt.key as keyof HeroV2Config];
       lines.push(`${opt.label}: ${val}${opt.unit ?? ""}`);
     } else if (opt.kind === "text") {
-      const val = String(config[opt.key as keyof HeroConfig] ?? "");
+      const val = String(config[opt.key as keyof HeroV2Config] ?? "");
       lines.push(`${opt.label}: ${val}`);
     } else if (opt.kind === "multi") {
       const active = opt.choices
-        .filter((c) => config.controls[c.value as keyof HeroConfig["controls"]])
+        .filter((c) => config.controls[c.value as keyof HeroV2Config["controls"]])
         .map((c) => c.label);
       lines.push(`${opt.label}: ${active.length > 0 ? active.join(", ") : "None"}`);
     }
@@ -104,10 +106,9 @@ function buildHeroSummary(config: HeroConfig): string {
     const status = s.enabled ? "ON" : "OFF";
     const parts = [
       `${idx + 1}. [${status}] ${s.title}`,
-      s.line ? `line="${s.line}"` : null,
-      `button="${s.buttonText}"`,
-      s.secondText && s.secondHref
-        ? `secondLink="${s.secondText}" (${s.secondHref})`
+      `link1="${s.link1Text}" (${s.link1Href})`,
+      s.link2Text && s.link2Href
+        ? `link2="${s.link2Text}" (${s.link2Href})`
         : null,
       `focus=${s.focusX}% ${s.focusY}%`,
       s.previewVideoUrl ? `video=${s.previewVideoUrl}` : null,
@@ -224,8 +225,9 @@ export function CustomizerPanel() {
     Layout: true,
     Slides: true,
     Text: false,
-    "Motion & controls": false,
-    Button: false,
+    Links: false,
+    Motion: false,
+    Controls: false,
     Photos: false,
     "Top bar": true,
     Logo: true,
@@ -302,7 +304,7 @@ export function CustomizerPanel() {
     }
   };
 
-  const updateSlide = (idx: number, patch: Partial<SlideSetting>) => {
+  const updateSlide = (idx: number, patch: Partial<HeroV2SlideSetting>) => {
     const nextSlides = heroConfig.slides.map((s, i) =>
       i === idx ? { ...s, ...patch } : s
     );
@@ -345,7 +347,7 @@ export function CustomizerPanel() {
       updateConfig("home-hero", {
         ...heroConfig,
         [key]: value,
-      } as HeroConfig);
+      } as HeroV2Config);
     } else {
       const numericKeys = new Set(["topBarHeight", "drawerWidth"]);
       const parsedVal = numericKeys.has(key) ? Number(value) : value;
@@ -613,7 +615,7 @@ export function CustomizerPanel() {
           <div className="grid grid-cols-2 gap-1.5">
             {opt.choices.map((c) => {
               const checked = Boolean(
-                heroConfig.controls[c.value as keyof HeroConfig["controls"]]
+                heroConfig.controls[c.value as keyof HeroV2Config["controls"]]
               );
               return (
                 <label
@@ -846,46 +848,51 @@ export function CustomizerPanel() {
                                   />
                                 </div>
 
-                                <div>
-                                  <label
-                                    htmlFor={`slide-line-${slide.id}`}
-                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                  >
-                                    Line
-                                  </label>
-                                  <input
-                                    id={`slide-line-${slide.id}`}
-                                    type="text"
-                                    maxLength={80}
-                                    value={slide.line}
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        line: e.target.value.slice(0, 80),
-                                      })
-                                    }
-                                    className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label
-                                    htmlFor={`slide-btn-${slide.id}`}
-                                    className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
-                                  >
-                                    Button text
-                                  </label>
-                                  <input
-                                    id={`slide-btn-${slide.id}`}
-                                    type="text"
-                                    maxLength={80}
-                                    value={slide.buttonText}
-                                    onChange={(e) =>
-                                      updateSlide(idx, {
-                                        buttonText: e.target.value.slice(0, 80),
-                                      })
-                                    }
-                                    className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
-                                  />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label
+                                      htmlFor={`slide-btn-${slide.id}`}
+                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
+                                    >
+                                      Link 1 text
+                                    </label>
+                                    <input
+                                      id={`slide-btn-${slide.id}`}
+                                      type="text"
+                                      maxLength={80}
+                                      value={slide.link1Text}
+                                      onChange={(e) =>
+                                        updateSlide(idx, {
+                                          link1Text: e.target.value.slice(0, 80),
+                                        })
+                                      }
+                                      className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label
+                                      htmlFor={`slide-href1-${slide.id}`}
+                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
+                                    >
+                                      Link 1 page
+                                    </label>
+                                    <select
+                                      id={`slide-href1-${slide.id}`}
+                                      value={slide.link1Href}
+                                      onChange={(e) =>
+                                        updateSlide(idx, {
+                                          link1Href: e.target.value,
+                                        })
+                                      }
+                                      className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
+                                    >
+                                      {HERO_V2_LINK_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                          {opt.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2">
@@ -894,17 +901,17 @@ export function CustomizerPanel() {
                                       htmlFor={`slide-btn2-${slide.id}`}
                                       className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
                                     >
-                                      Second link text
+                                      Link 2 text
                                     </label>
                                     <input
                                       id={`slide-btn2-${slide.id}`}
                                       type="text"
-                                      maxLength={30}
+                                      maxLength={80}
                                       placeholder="Optional"
-                                      value={slide.secondText}
+                                      value={slide.link2Text}
                                       onChange={(e) =>
                                         updateSlide(idx, {
-                                          secondText: e.target.value.slice(0, 30),
+                                          link2Text: e.target.value.slice(0, 80),
                                         })
                                       }
                                       className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
@@ -915,19 +922,19 @@ export function CustomizerPanel() {
                                       htmlFor={`slide-href2-${slide.id}`}
                                       className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
                                     >
-                                      Second link page
+                                      Link 2 page
                                     </label>
                                     <select
                                       id={`slide-href2-${slide.id}`}
-                                      value={slide.secondHref}
+                                      value={slide.link2Href}
                                       onChange={(e) =>
                                         updateSlide(idx, {
-                                          secondHref: e.target.value,
+                                          link2Href: e.target.value,
                                         })
                                       }
                                       className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
                                     >
-                                      {SECOND_LINK_OPTIONS.map((opt) => (
+                                      {HERO_V2_OPTIONAL_LINK_OPTIONS.map((opt) => (
                                         <option key={opt.value} value={opt.value}>
                                           {opt.label}
                                         </option>

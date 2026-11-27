@@ -1,8 +1,8 @@
 import {
-  DEFAULT_HERO_CONFIG,
-  validateHeroConfig,
-  type HeroConfig,
-} from "@/lib/hero-config";
+  DEFAULT_HERO_V2_CONFIG,
+  validateHeroV2Config,
+  type HeroV2Config,
+} from "@/lib/hero-v2-config";
 import {
   DEFAULT_HEADER_CONFIG,
   validateHeaderConfig,
@@ -10,16 +10,16 @@ import {
 } from "@/lib/header-config";
 import type { Section } from "./types";
 
-export const homeHeroSection: Section<HeroConfig> = {
+export const homeHeroSection: Section<HeroV2Config> = {
   id: "home-hero",
   title: "Home hero",
-  defaults: DEFAULT_HERO_CONFIG,
-  validate: validateHeroConfig,
+  defaults: DEFAULT_HERO_V2_CONFIG,
+  validate: validateHeroV2Config,
   options: [
     {
       kind: "choice",
       key: "height",
-      label: "1. Hero height",
+      label: "Hero height",
       group: "Layout",
       choices: [
         { value: "full", label: "Full screen" },
@@ -30,40 +30,49 @@ export const homeHeroSection: Section<HeroConfig> = {
     {
       kind: "choice",
       key: "mediaType",
-      label: "2. Media type",
+      label: "Media type",
       group: "Layout",
       choices: [
-        { value: "video", label: "Video (photo fallback)" },
-        { value: "photo", label: "Photo only" },
-      ],
-    },
-    {
-      kind: "choice",
-      key: "textMode",
-      label: "3. Text layout",
-      group: "Text",
-      choices: [
-        { value: "title-button", label: "Title + Button" },
-        { value: "title-line-button", label: "Title + Line + Button" },
-        { value: "none", label: "None (whole slide clickable)" },
+        { value: "photo", label: "Photos" },
+        { value: "video", label: "Video (with photo fallback)" },
       ],
     },
     {
       kind: "choice",
       key: "textPosition",
-      label: "4. Text position",
+      label: "Text position",
       group: "Text",
       choices: [
-        { value: "centre", label: "Centre" },
         { value: "bottom-centre", label: "Bottom centre" },
+        { value: "centre", label: "Centre" },
         { value: "bottom-left", label: "Bottom left" },
         { value: "left-middle", label: "Left middle" },
       ],
     },
     {
+      kind: "range",
+      key: "titleSizeDesktop",
+      label: "Title size (desktop)",
+      group: "Text",
+      min: 32,
+      max: 72,
+      step: 2,
+      unit: "px",
+    },
+    {
+      kind: "range",
+      key: "titleSizeMobile",
+      label: "Title size (phone)",
+      group: "Text",
+      min: 28,
+      max: 48,
+      step: 2,
+      unit: "px",
+    },
+    {
       kind: "text",
       key: "headingText",
-      label: "5. Main heading (H1)",
+      label: "Page heading (h1)",
       group: "Text",
       placeholder: "Sweet like Mishri. Soft like a hug.",
       maxLength: 80,
@@ -71,20 +80,31 @@ export const homeHeroSection: Section<HeroConfig> = {
     {
       kind: "toggle",
       key: "headingVisible",
-      label: "6. Show main heading on screen",
+      label: "Show h1 eyebrow above title",
       group: "Text",
+    },
+    {
+      kind: "choice",
+      key: "linkStyle",
+      label: "Link style",
+      group: "Links",
+      choices: [
+        { value: "link", label: "Underlined text links" },
+        { value: "outline", label: "Outline button" },
+        { value: "solid", label: "Solid cream button" },
+      ],
     },
     {
       kind: "toggle",
       key: "autoplay",
-      label: "7. Autoplay slides",
-      group: "Motion & controls",
+      label: "Auto-advance slides",
+      group: "Motion",
     },
     {
       kind: "range",
       key: "intervalSec",
-      label: "8. Slide interval",
-      group: "Motion & controls",
+      label: "Seconds per slide",
+      group: "Motion",
       min: 3,
       max: 10,
       step: 1,
@@ -93,42 +113,31 @@ export const homeHeroSection: Section<HeroConfig> = {
     {
       kind: "choice",
       key: "transition",
-      label: "9. Transition",
-      group: "Motion & controls",
+      label: "Transition",
+      group: "Motion",
       choices: [
-        { value: "fade", label: "Fade" },
+        { value: "fade", label: "Crossfade" },
         { value: "slide", label: "Slide" },
       ],
     },
     {
       kind: "multi",
       key: "controls",
-      label: "10. Controls",
-      group: "Motion & controls",
+      label: "Visible controls",
+      group: "Controls",
       choices: [
-        { value: "dots", label: "Dots" },
         { value: "arrows", label: "Arrows" },
+        { value: "dots", label: "Dots" },
+        { value: "pause", label: "Pause button" },
         { value: "progress", label: "Progress bars" },
-        { value: "counter", label: "Counter" },
-        { value: "pause", label: "Pause / Play" },
+        { value: "counter", label: "Slide counter" },
         { value: "swipe", label: "Touch swipe" },
-      ],
-    },
-    {
-      kind: "choice",
-      key: "buttonStyle",
-      label: "11. Button style",
-      group: "Button",
-      choices: [
-        { value: "outline", label: "Outline" },
-        { value: "solid", label: "Solid cream" },
-        { value: "link", label: "Text link" },
       ],
     },
     {
       kind: "range",
       key: "scrimPercent",
-      label: "12. Scrim darkness",
+      label: "Scrim strength",
       group: "Photos",
       min: 15,
       max: 60,
@@ -138,7 +147,7 @@ export const homeHeroSection: Section<HeroConfig> = {
     {
       kind: "choice",
       key: "placeholderMode",
-      label: "13. Placeholder mode",
+      label: "Photo mode",
       group: "Photos",
       choices: [
         { value: "sample", label: "Sample photos" },
@@ -466,5 +475,5 @@ export const siteHeaderSection: Section<HeaderConfig> = {
   ],
 };
 
-export const customizerSections = [siteHeaderSection] as const;
+export const customizerSections = [homeHeroSection, siteHeaderSection] as const;
 export type SectionId = (typeof customizerSections)[number]["id"];
