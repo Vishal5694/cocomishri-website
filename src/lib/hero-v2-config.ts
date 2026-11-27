@@ -243,14 +243,14 @@ export const DEFAULT_HERO_V2_CONFIG: HeroV2Config = {
   intervalSec: 5,
   transition: "fade",
   controls: {
-    arrows: false,
+    arrows: true,
     dots: true,
     pause: false,
     progress: false,
     counter: false,
     swipe: true,
   },
-  scrimPercent: 30,
+  scrimPercent: 60,
   placeholderMode: "sample",
 };
 
