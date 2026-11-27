@@ -12,7 +12,24 @@ import {
 import {
   AVAILABLE_HERO_V2_SLIDES,
   DEFAULT_HERO_V2_CONFIG,
+  type HeroV2Config,
 } from "@/lib/hero-v2-config";
+
+const REFERENCE_V2_CONFIG: HeroV2Config = {
+  ...DEFAULT_HERO_V2_CONFIG,
+  mediaType: "photo",
+  headingVisible: false,
+  intervalSec: 6,
+  controls: {
+    arrows: true,
+    dots: true,
+    pause: false,
+    progress: false,
+    counter: false,
+    swipe: true,
+  },
+  scrimPercent: 55,
+};
 import { images, type ImageEntry, type ImageKey } from "@/lib/images";
 import imageLoader from "@/lib/image-loader";
 import { cn } from "@/lib/utils";
@@ -62,10 +79,14 @@ export function HeroSliderV2({
 }) {
   const customCfg = useSectionConfig("home-hero");
   const isCustomActive = useCustomizerConfig && isCustomizerEnabled;
-  const cfg = isCustomActive ? customCfg : DEFAULT_HERO_V2_CONFIG;
+  const cfg = useCustomizerConfig
+    ? isCustomizerEnabled
+      ? customCfg
+      : DEFAULT_HERO_V2_CONFIG
+    : REFERENCE_V2_CONFIG;
 
   const slides = React.useMemo<HeroSlideData[]>(() => {
-    if (!isCustomActive) return propSlides;
+    if (!useCustomizerConfig) return propSlides;
 
     const propMap = new Map(propSlides.map((s) => [s.id, s]));
     const metaMap = new Map(AVAILABLE_HERO_V2_SLIDES.map((s) => [s.id, s]));
@@ -125,6 +146,7 @@ export function HeroSliderV2({
   const [idleReady, setIdleReady] = React.useState(false);
   const [isPaused, setIsPaused] = React.useState(false);
   const [userPaused, setUserPaused] = React.useState(false);
+  const [isTabHidden, setIsTabHidden] = React.useState(false);
   const [reducedMotion, setReducedMotion] = React.useState(false);
   const [loadedMap, setLoadedMap] = React.useState<Record<number, boolean>>(() => {
     const init: Record<number, boolean> = {};
@@ -149,6 +171,16 @@ export function HeroSliderV2({
     const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  React.useEffect(() => {
+    const handleVisibility = () => {
+      setIsTabHidden(document.visibilityState === "hidden");
+    };
+    handleVisibility();
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   // Load slides 2 and 3 right after the page is idle
@@ -238,7 +270,12 @@ export function HeroSliderV2({
   }, [pendingIndex, loadedMap, startTransition]);
 
   const isAutoplayPaused =
-    reducedMotion || !cfg.autoplay || isPaused || userPaused || slides.length <= 1;
+    reducedMotion ||
+    !cfg.autoplay ||
+    isPaused ||
+    userPaused ||
+    isTabHidden ||
+    slides.length <= 1;
   const intervalMs = cfg.intervalSec * 1000;
 
   // Autoplay (disabled with reduced motion or pause)
@@ -270,7 +307,10 @@ export function HeroSliderV2({
 
   const activeTextSlide = slides[safeTextIndex] || slides[0];
   const isColourMode = cfg.placeholderMode === "colour";
-  const resolvedHeading = isCustomActive ? cfg.headingText : headingText;
+  const resolvedHeading = useCustomizerConfig ? cfg.headingText : headingText;
+  const isDuplicateHeading =
+    activeTextSlide.title.trim().toLowerCase() ===
+    resolvedHeading.trim().toLowerCase();
   const heightClass =
     cfg.height === "85"
       ? "h-[85svh] min-h-[480px]"
@@ -461,14 +501,18 @@ export function HeroSliderV2({
           {cfg.headingVisible && (
             <h1
               className={cn(
-                "font-body text-xs uppercase tracking-[0.12em] font-semibold",
-                isColourMode ? "text-cocoa-700" : "text-cream-50/90"
+                isDuplicateHeading
+                  ? "sr-only"
+                  : cn(
+                      "font-body font-semibold text-[13px] uppercase tracking-[0.12em]",
+                      isColourMode ? "text-cocoa-700" : "text-cream-50"
+                    )
               )}
             >
               {resolvedHeading}
             </h1>
           )}
-          {isCustomActive &&
+          {useCustomizerConfig &&
           (cfg.titleSizeDesktop !== 48 || cfg.titleSizeMobile !== 32) ? (
             <h2
               style={
