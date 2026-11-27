@@ -195,12 +195,12 @@ export function HeroSlideshow() {
 
   const textPosClass =
     config.textPosition === "bottom-centre"
-      ? "items-center justify-end pb-24 text-center"
+      ? "items-center justify-end pb-14 sm:pb-16 px-4 sm:px-6 text-center gap-4"
       : config.textPosition === "bottom-left"
-        ? "items-start justify-end pb-24 text-left px-6 sm:px-12 lg:px-16"
+        ? "items-start justify-end pb-14 sm:pb-16 text-left px-6 sm:px-12 lg:px-16 gap-6"
         : config.textPosition === "left-middle"
-          ? "items-start justify-center text-left px-6 sm:px-12 lg:px-16"
-          : "items-center justify-center text-center";
+          ? "items-start justify-center text-left px-6 sm:px-12 lg:px-16 gap-6"
+          : "items-center justify-center text-center px-6 gap-6";
 
   const getButtonClass = () => {
     if (config.buttonStyle === "solid") {
@@ -213,10 +213,10 @@ export function HeroSlideshow() {
     }
     if (config.buttonStyle === "link") {
       return cn(
-        "min-h-[44px] font-body font-semibold uppercase text-[13px] tracking-[0.12em] underline underline-offset-4 inline-flex items-center gap-1.5 transition-opacity duration-300 ease-soft hover:opacity-80",
+        "min-h-[44px] px-2 font-body font-semibold uppercase text-[13px] tracking-[0.12em] underline underline-offset-4 inline-flex items-center justify-center transition-colors duration-300 ease-soft",
         isColourMode
-          ? "text-cocoa-900 focus-visible:outline-2 focus-visible:outline-cocoa-900 focus-visible:outline-offset-4"
-          : "text-cream-50 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-4"
+          ? "text-cocoa-900 hover:text-blush-700 focus-visible:outline-2 focus-visible:outline-cocoa-900 focus-visible:outline-offset-2"
+          : "text-cream-50 hover:text-caramel-100 focus-visible:outline-2 focus-visible:outline-cream-50 focus-visible:outline-offset-2"
       );
     }
     return cn(
@@ -274,7 +274,7 @@ export function HeroSlideshow() {
         const slideTransitionClass =
           config.transition === "slide"
             ? cn(
-                "transition-transform duration-700 ease-soft motion-reduce:transition-none",
+                "transition-transform duration-[600ms] ease-soft motion-reduce:transition-none",
                 isActive
                   ? "translate-x-0 z-10"
                   : idx < safeIndex
@@ -282,7 +282,7 @@ export function HeroSlideshow() {
                     : "translate-x-full z-0 pointer-events-none"
               )
             : cn(
-                "transition-opacity duration-700 ease-soft motion-reduce:transition-none",
+                "transition-opacity duration-[600ms] ease-soft motion-reduce:transition-none",
                 isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
               );
 
@@ -343,20 +343,35 @@ export function HeroSlideshow() {
                   />
                 )}
 
-                {/* Scrim: cocoa-900 configurable + soft radial behind text */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ backgroundColor: `rgba(69, 33, 4, ${scrimAlpha})` }}
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(circle at center, rgba(69, 33, 4, 0.55) 0%, rgba(69, 33, 4, 0.15) 45%, transparent 70%)",
-                  }}
-                />
+                {/* Scrim: bottom gradient for bottom text, or radial for centred text */}
+                {config.textPosition === "bottom-centre" ||
+                config.textPosition === "bottom-left" ? (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: `linear-gradient(to top, rgba(69, 33, 4, ${scrimAlpha}) 0%, rgba(69, 33, 4, ${(scrimAlpha * 0.36).toFixed(2)}) 45%, transparent 100%)`,
+                    }}
+                  />
+                ) : (
+                  <>
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        backgroundColor: `rgba(69, 33, 4, ${scrimAlpha})`,
+                      }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(circle at center, rgba(69, 33, 4, 0.55) 0%, rgba(69, 33, 4, 0.15) 45%, transparent 70%)",
+                      }}
+                    />
+                  </>
+                )}
               </>
             )}
 
@@ -369,10 +384,7 @@ export function HeroSlideshow() {
               />
             ) : (
               <div
-                className={cn(
-                  "absolute inset-0 z-10 flex flex-col px-6 gap-6",
-                  textPosClass
-                )}
+                className={cn("absolute inset-0 z-10 flex flex-col", textPosClass)}
               >
                 <div className="space-y-3 max-w-3xl">
                   {config.headingVisible && idx === safeIndex && (
@@ -387,7 +399,10 @@ export function HeroSlideshow() {
                   )}
                   <h2
                     className={cn(
-                      "font-heading [font-variation-settings:'SOFT'_75] font-medium normal-case text-[40px] lg:text-[64px] leading-[1.1]",
+                      "font-heading [font-variation-settings:'SOFT'_75] font-medium normal-case tracking-normal",
+                      config.textPosition === "bottom-centre"
+                        ? "text-[32px] lg:text-[48px] leading-[1.15]"
+                        : "text-[40px] lg:text-[64px] leading-[1.1]",
                       isColourMode ? "text-cocoa-900" : "text-cream-50"
                     )}
                   >
@@ -406,12 +421,19 @@ export function HeroSlideshow() {
                   )}
                 </div>
 
-                <Link href={meta.href} className={getButtonClass()}>
-                  <span>{setting.buttonText || "Shop now"}</span>
-                  {config.buttonStyle === "link" && (
-                    <span aria-hidden="true">&rarr;</span>
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                  <Link href={meta.href} className={getButtonClass()}>
+                    <span>{setting.buttonText || "Shop now"}</span>
+                  </Link>
+                  {setting.secondText && setting.secondHref && (
+                    <Link
+                      href={setting.secondHref}
+                      className={getButtonClass()}
+                    >
+                      <span>{setting.secondText}</span>
+                    </Link>
                   )}
-                </Link>
+                </div>
               </div>
             )}
           </div>
@@ -426,7 +448,7 @@ export function HeroSlideshow() {
             onClick={() => goTo(safeIndex - 1)}
             aria-label="Previous slide"
             className={cn(
-              "absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-20 size-11 rounded-pill flex items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+              "hidden sm:flex absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-20 size-11 rounded-pill items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
               isColourMode
                 ? "bg-cocoa-900/10 text-cocoa-900 hover:bg-cocoa-900/20 focus-visible:outline-cocoa-900"
                 : "bg-cocoa-900/35 text-cream-50 hover:bg-cocoa-900/55 focus-visible:outline-cream-50"
@@ -440,7 +462,7 @@ export function HeroSlideshow() {
             onClick={() => goTo(safeIndex + 1)}
             aria-label="Next slide"
             className={cn(
-              "absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-20 size-11 rounded-pill flex items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+              "hidden sm:flex absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-20 size-11 rounded-pill items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
               isColourMode
                 ? "bg-cocoa-900/10 text-cocoa-900 hover:bg-cocoa-900/20 focus-visible:outline-cocoa-900"
                 : "bg-cocoa-900/35 text-cream-50 hover:bg-cocoa-900/55 focus-visible:outline-cream-50"
@@ -456,7 +478,7 @@ export function HeroSlideshow() {
         (config.controls.dots ||
           config.controls.counter ||
           config.controls.pause) && (
-          <div className="absolute bottom-8 inset-x-0 z-20 flex items-center justify-center gap-2 px-4">
+          <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-1 px-4">
             {config.controls.dots && (
               <div className="flex items-center">
                 {enabledSlides.map(({ setting, meta }, idx) => {
@@ -469,7 +491,7 @@ export function HeroSlideshow() {
                       aria-label={`Show slide ${idx + 1} of ${enabledSlides.length}: ${setting.title}`}
                       aria-current={isActive ? "true" : undefined}
                       className={cn(
-                        "size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-offset-2",
+                        "size-11 flex items-center justify-center rounded-pill focus-visible:outline-2 focus-visible:outline-offset-1",
                         isColourMode
                           ? "focus-visible:outline-cocoa-900"
                           : "focus-visible:outline-cream-50"
@@ -477,14 +499,14 @@ export function HeroSlideshow() {
                     >
                       <span
                         className={cn(
-                          "block h-2 rounded-pill transition-all duration-300 ease-soft motion-reduce:transition-none",
+                          "block h-1.5 rounded-pill transition-all duration-300 ease-soft motion-reduce:transition-none",
                           isActive
                             ? isColourMode
-                              ? "w-6 bg-cocoa-900"
-                              : "w-6 bg-cream-50"
+                              ? "w-5 bg-cocoa-900"
+                              : "w-5 bg-cream-50"
                             : isColourMode
-                              ? "w-2 bg-cocoa-900/40"
-                              : "w-2 bg-cream-50/50"
+                              ? "w-1.5 bg-cocoa-900/40"
+                              : "w-1.5 bg-cream-50/60"
                         )}
                       />
                     </button>

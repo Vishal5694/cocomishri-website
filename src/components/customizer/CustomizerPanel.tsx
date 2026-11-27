@@ -25,7 +25,11 @@ import {
   encodeBase64Utf8,
   type ConfigMap,
 } from "@/lib/customizer/CustomizerContext";
-import type { HeroConfig, SlideSetting } from "@/lib/hero-config";
+import {
+  SECOND_LINK_OPTIONS,
+  type HeroConfig,
+  type SlideSetting,
+} from "@/lib/hero-config";
 import type { HeaderConfig, TopBarMessageSetting } from "@/lib/header-config";
 import {
   brandColors,
@@ -102,6 +106,9 @@ function buildHeroSummary(config: HeroConfig): string {
       `${idx + 1}. [${status}] ${s.title}`,
       s.line ? `line="${s.line}"` : null,
       `button="${s.buttonText}"`,
+      s.secondText && s.secondHref
+        ? `secondLink="${s.secondText}" (${s.secondHref})`
+        : null,
       `focus=${s.focusX}% ${s.focusY}%`,
       s.previewVideoUrl ? `video=${s.previewVideoUrl}` : null,
     ].filter(Boolean);
@@ -878,6 +885,54 @@ export function CustomizerPanel() {
                                     }
                                     className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
                                   />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label
+                                      htmlFor={`slide-btn2-${slide.id}`}
+                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
+                                    >
+                                      Second link text
+                                    </label>
+                                    <input
+                                      id={`slide-btn2-${slide.id}`}
+                                      type="text"
+                                      maxLength={30}
+                                      placeholder="Optional"
+                                      value={slide.secondText}
+                                      onChange={(e) =>
+                                        updateSlide(idx, {
+                                          secondText: e.target.value.slice(0, 30),
+                                        })
+                                      }
+                                      className="w-full min-h-[40px] px-2.5 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label
+                                      htmlFor={`slide-href2-${slide.id}`}
+                                      className="block text-[12px] font-medium text-cocoa-700 mb-0.5"
+                                    >
+                                      Second link page
+                                    </label>
+                                    <select
+                                      id={`slide-href2-${slide.id}`}
+                                      value={slide.secondHref}
+                                      onChange={(e) =>
+                                        updateSlide(idx, {
+                                          secondHref: e.target.value,
+                                        })
+                                      }
+                                      className="w-full min-h-[40px] px-2 rounded-[8px] bg-cream-50 border border-sand-300 text-[13px] text-cocoa-900"
+                                    >
+                                      {SECOND_LINK_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                          {opt.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 pt-1">

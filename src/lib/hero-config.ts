@@ -1,11 +1,29 @@
 import { availableHeroSlides, parseFocusPercent } from "./hero";
 
+export const SECOND_LINK_OPTIONS = [
+  { value: "", label: "None" },
+  { value: "/our-story", label: "Our story (/our-story)" },
+  { value: "/collections/baby-new-in", label: "New in (/collections/baby-new-in)" },
+  { value: "/collections/naming-ceremony", label: "Naming ceremony (/collections/naming-ceremony)" },
+  { value: "/collections/festive", label: "Festive (/collections/festive)" },
+  { value: "/collections/baby-toddler", label: "Baby + Toddler (/collections/baby-toddler)" },
+  { value: "/collections/girls", label: "Girls (/collections/girls)" },
+  { value: "/collections/boys", label: "Boys (/collections/boys)" },
+  { value: "/collections/everyday-comfort", label: "Everyday comfort (/collections/everyday-comfort)" },
+  { value: "/gifting", label: "Gifting (/gifting)" },
+  { value: "/shop", label: "Shop all (/shop)" },
+] as const;
+
+const ALLOWED_SECOND_HREFS = SECOND_LINK_OPTIONS.map((o) => o.value);
+
 export interface SlideSetting {
   id: string;
   enabled: boolean;
   title: string;
   line: string;
   buttonText: string;
+  secondText: string;
+  secondHref: string;
   focusX: number;
   focusY: number;
   previewVideoUrl: string;
@@ -46,6 +64,8 @@ function buildDefaultSlides(): SlideSetting[] {
       title: slide.title,
       line: "",
       buttonText: slide.defaultButtonText || "Shop now",
+      secondText: slide.defaultSecondText || "",
+      secondHref: slide.defaultSecondHref || "",
       focusX: x,
       focusY: y,
       previewVideoUrl: "",
@@ -54,26 +74,26 @@ function buildDefaultSlides(): SlideSetting[] {
 }
 
 export const DEFAULT_HERO_CONFIG: HeroConfig = {
-  mediaType: "video",
+  mediaType: "photo",
   slides: buildDefaultSlides(),
   textMode: "title-button",
-  textPosition: "centre",
+  textPosition: "bottom-centre",
   headingText: "Sweet like Mishri. Soft like a hug.",
   headingVisible: false,
   height: "full",
   autoplay: true,
-  intervalSec: 7,
+  intervalSec: 6,
   transition: "fade",
   controls: {
     dots: true,
-    arrows: false,
+    arrows: true,
     progress: false,
     counter: false,
     pause: true,
     swipe: true,
   },
-  buttonStyle: "outline",
-  scrimPercent: 35,
+  buttonStyle: "link",
+  scrimPercent: 55,
   placeholderMode: "sample",
 };
 
@@ -143,6 +163,8 @@ export function validateHeroConfig(raw: unknown): HeroConfig {
         title: clampText(s.title, def.title, 80),
         line: clampText(s.line, def.line, 80),
         buttonText: clampText(s.buttonText, def.buttonText, 80),
+        secondText: clampText(s.secondText, def.secondText, 30),
+        secondHref: pickChoice(s.secondHref, ALLOWED_SECOND_HREFS, def.secondHref),
         focusX: clampInt(s.focusX, 0, 100, def.focusX),
         focusY: clampInt(s.focusY, 0, 100, def.focusY),
         previewVideoUrl: sanitizeVideoUrl(s.previewVideoUrl),

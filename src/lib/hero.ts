@@ -9,16 +9,47 @@ export type HeroSlide = {
   focus: string;
   defaultEnabled?: boolean;
   defaultButtonText?: string;
+  defaultSecondText?: string;
+  defaultSecondHref?: string;
 };
 
 export const availableHeroSlides: HeroSlide[] = [
+  {
+    id: "v2-sweet",
+    title: "Sweet like Mishri. Soft like a hug.",
+    href: "/collections/baby-new-in",
+    imageKey: "hero-desktop",
+    focus: "50% 30%",
+    defaultEnabled: true,
+    defaultButtonText: "Shop new in",
+    defaultSecondText: "Our story",
+    defaultSecondHref: "/our-story",
+  },
+  {
+    id: "v2-moments",
+    title: "Made for little moments. Loved for a lifetime.",
+    href: "/collections/naming-ceremony",
+    imageKey: "v2-slide-2",
+    focus: "50% 30%",
+    defaultEnabled: true,
+    defaultButtonText: "Shop naming ceremony",
+  },
+  {
+    id: "v2-dreams",
+    title: "Where little dreams wear love",
+    href: "/collections/festive",
+    imageKey: "v2-slide-3",
+    focus: "50% 30%",
+    defaultEnabled: true,
+    defaultButtonText: "Shop festive",
+  },
   {
     id: "baby-toddler",
     title: "Baby + Toddler",
     href: "/collections/baby-toddler",
     imageKey: "hero-baby-toddler",
     focus: "50% 30%",
-    defaultEnabled: true,
+    defaultEnabled: false,
     defaultButtonText: "Shop now",
   },
   {
@@ -27,7 +58,7 @@ export const availableHeroSlides: HeroSlide[] = [
     href: "/collections/girls",
     imageKey: "hero-girls",
     focus: "50% 25%",
-    defaultEnabled: true,
+    defaultEnabled: false,
     defaultButtonText: "Shop now",
   },
   {
@@ -36,7 +67,7 @@ export const availableHeroSlides: HeroSlide[] = [
     href: "/collections/boys",
     imageKey: "hero-boys",
     focus: "50% 20%",
-    defaultEnabled: true,
+    defaultEnabled: false,
     defaultButtonText: "Shop now",
   },
   {
@@ -45,7 +76,7 @@ export const availableHeroSlides: HeroSlide[] = [
     href: "/gifting",
     imageKey: "hero-gifting",
     focus: "50% 50%",
-    defaultEnabled: true,
+    defaultEnabled: false,
     defaultButtonText: "Shop now",
   },
   {
@@ -54,7 +85,7 @@ export const availableHeroSlides: HeroSlide[] = [
     href: "/collections/everyday-comfort",
     imageKey: "hero-everyday",
     focus: "50% 68%",
-    defaultEnabled: true,
+    defaultEnabled: false,
     defaultButtonText: "Shop now",
   },
   {
